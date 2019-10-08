@@ -15,6 +15,9 @@ $(document).ready(function() {
     if (!userData.email || !userData.password) {
       return;
     }
+
+    //TODO: Add aditional validation
+
     // If we have an email and password, run the signUpUser function
     signUpUser(userData.email, userData.password);
     emailInput.val("");

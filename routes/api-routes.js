@@ -47,4 +47,29 @@ module.exports = function (app) {
     }
   });
 
+  // Route for performing a store seach
+  app.get("/api/search", function (req, res){});
+
+  // Route for getting info for a particular store
+  app.get("/api/stores", function (req, res){});
+
+  // Rote for adding a new store
+  app.post("/api/stores", function (req, res){
+
+    // Check that a store with similar name & address does not already exist
+
+  });
+
+  // Route for adding a rating and/or note to an existing store
+  app.post("/api/stores/:id/:userID", function (req, res){});
+
+  // Route for updating a personal rating and/or note
+  app.put("/api/stores/:id/:userID", function (req, res){});
+
+  // Route for adding a tag to a store category 
+  app.put("/api/stores/:id/:category", function (req, res){});
+
+  // Route for adding a category to a store
+  app.post("/api/stores/:id/:category", function (req, res) {});
+
 };
