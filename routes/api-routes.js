@@ -15,6 +15,7 @@ module.exports = function (app) {
   // otherwise send back an error
   app.post("/api/signup", function (req, res) {
     db.User.create({
+      userName: req.body.userName,
       email: req.body.email,
       password: req.body.password
     })
@@ -22,6 +23,8 @@ module.exports = function (app) {
         res.redirect(307, "/api/login");
       })
       .catch(function (err) {
+        console.log('caught login error');
+        console.log(err);
         res.status(401).json(err);
       });
   });
