@@ -2,7 +2,7 @@ module.exports = function (sequelize, DataTypes) {
     var CategoryEntry = sequelize.define("CategoryEntry", {
 
         type: {
-            type: DataTypes.ENUM('Fashion', 'Furniture', 'Home Goods', 'Misc'),
+            type: DataTypes.ENUM('fashion', 'furniture', 'home goods', 'misc'),
             allowNull: false
         },
 
@@ -39,7 +39,7 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     CategoryEntry.associate = models => {
-        
+
         CategoryEntry.belongsTo(models.Store);
         CategoryEntry.hasMany(models.Tag);
     };
