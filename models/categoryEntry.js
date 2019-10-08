@@ -6,14 +6,6 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false
         },
 
-        storeID: {
-            type: DataTypes.INTEGER,
-            references: {
-                model: 'Stores',
-                key: 'id'
-            }
-        },
-
         qualityTotal: {
             type: DataTypes.INTEGER,
             defaultValue: 0
@@ -46,8 +38,34 @@ module.exports = function (sequelize, DataTypes) {
 
     });
 
-    CategoryEntry.belongsTo(Store);
-    CategoryEntry.hasMany(Tag);
+    CategoryEntry.associate = models => {
+        
+        CategoryEntry.belongsTo(models.Store);
+        CategoryEntry.hasMany(models.Tag);
+    };
+
+
 
     return CategoryEntry;
 };
+
+// material.associate = models => {
+//     // material.hasMany(models.parts, {
+//     //     through: “”
+//     // onDelete: “cascade”
+//     // });
+//     material.belongsTo(models.materialInventory, {
+//         onDelete: “cascade”
+//     });
+//     material.belongsTo(models.materialType, {
+//         onDelete: “cascade”
+//     });
+//     material.belongsTo(models.materialPurchased, {
+//         onDelete: “cascade”
+//     });
+//     material.belongsTo(models.location, {
+//         onDelete: “cascade”
+//     });
+// }
+// return material;
+//  };

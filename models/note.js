@@ -22,8 +22,11 @@ module.exports = function (sequelize, DataTypes) {
 
     });
 
-    Note.belongsTo(CategoryEntry);
-    Note.belongsTo(User);
+    Note.associate = models => {
+
+        Note.belongsTo(models.CategoryEntry);
+        Note.belongsTo(models.User);
+    };
 
     return Note;
 };

@@ -6,7 +6,12 @@ module.exports = function (sequelize, DataTypes) {
         }
     });
 
-    Tag.belongsTo(CategoryEntry);
+    Tag.associate = models => {
+
+        Tag.belongsTo(models.CategoryEntry);
+    };
+
+
 
     return Tag;
 };

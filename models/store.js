@@ -30,10 +30,15 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         }
-        
+
     });
 
-    Store.hasMany(CategoryEntry);
+    Store.associate = models => {
+
+        Store.hasMany(models.CategoryEntry);
+    };
+
+
 
     return Store;
 };
