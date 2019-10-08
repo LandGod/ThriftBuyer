@@ -59,9 +59,40 @@ module.exports = function (app) {
   // Rote for adding a new store
   app.post("/api/stores", function (req, res){
 
-    // Check that a store with similar name & address does not already exist
+    // Parse incoming data object
+    // Format: req.body = {name: 'storeName', address: 'StoreAddress', categories: ['someCategory','someOther']}
 
-  });
+    let storeName = req.body.name;
+    let address = req.body.address;
+    let fashion = Boolean(req.body.categories.includes('fashion'));
+    let furniture = Boolean(req.body.categories.includes('furniture'));
+    let homeGoods = Boolean(req.body.categories.includes('home goods'));
+    let misc = Boolean(req.body.categories.includes('misc'));
+
+    // Check that a store with similar name & address does not already exist
+    //TODO: Clientside address validation using Smart Streets OR JUST USE GOOGLE'S AUTOCOMPLETE API
+    //TODO: Google maps based comparison via address 
+
+    // Create new database entry
+    db.Store.create({
+      name: storeName,
+      address: address,
+      hasFashion: fashion,
+      hasFurniture: furniture,
+      hasHomeGoods: homeGoods,
+      hasMisc: misc
+    })
+    .then((response) => {
+      
+      //TODO: Get ID for table row we just created and return it to the client so they can be redirected to that page
+      // via an html route
+      res.json('Success!');
+
+      })
+    .catch((err) => {
+      res.json(`Error: ${err}`)
+    })
+    })
 
   // Route for adding a rating and/or note to an existing store
   app.post("/api/stores/:id/:userID", function (req, res){});

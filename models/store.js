@@ -8,7 +8,8 @@ module.exports = function (sequelize, DataTypes) {
 
         address: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
 
         hasFashion: {
