@@ -50,10 +50,10 @@ module.exports = function (app) {
     }
   });
 
-  // Route for performing a store seach
+  // Route for performing a store seach TODO:
   app.get("/api/search", function (req, res) { });
 
-  // Route for getting info for a particular store
+  // Route for getting info for a particular store TODO:
   app.get("/api/stores", function (req, res) { });
 
   // Rote for adding a new store
@@ -107,13 +107,13 @@ module.exports = function (app) {
 
         // Wait until all the category entries are created, and then report status and new store's id after all operations have succeeded
         Promise.all(promiseList).then((results) => {
-          res.json({success: true, newStoreId: results[0].StoreId});
+          res.json({ success: true, newStoreId: results[0].StoreId });
         })
-        // Report any errors to the console
-        .catch((err => {
-          res.json(`Async error during categoryEntry creation:\n${err}`);
-          //TODO: Handle error and inform user
-        }))
+          // Report any errors to the console
+          .catch((err => {
+            res.json(`Async error during categoryEntry creation:\n${err}`);
+            //TODO: Handle error (probably delete entire store) and inform user
+          }))
 
 
       })
@@ -123,17 +123,153 @@ module.exports = function (app) {
       })
   })
 
-  // Route for adding a rating and/or note to an existing store
-  app.post("/api/stores/:id/:userID", function (req, res) { });
+  // Route for adding a rating and/or note to an existing store for the first time
+  // if any of this information already exists for the user then a PUT shoudl be used instead
+  app.post("/api/stores/add-note", function (req, res) {
 
-  // Route for updating a personal rating and/or note
+    // console.log('DEBUG:\n-------------------');
+    // console.log(req.body);
+
+    // Extract and parse data from request
+    let categoryId = req.body.categoryId;
+    let userId = req.body.userId;
+
+    assert(userId, 'No user ID provided.');
+    assert(categoryId, 'No store category identifier provided.')
+
+    let quality = req.body.quality || null;
+    console.log(req.body)
+    console.log(quality)
+    let quantity = req.body.quantity || null;
+    console.log(quantity)
+    let price = req.body.price || null;
+    console.log(price)
+    let note = req.body.note || null;
+    console.log(note)
+
+    // Make sure matching entry does not alreayd exist. If not, proceed.
+
+    // The following code is not working. Reason unknown:
+    // db.Note.findOrCreate({
+    //   where: {
+    //     UserId: userId,
+    //     CategoryEntryId: categoryId
+    //   },
+    //   defualts: {
+    //     CategoryEntryId: categoryId,
+    //     UserId: userId,
+    //     quality: quality,
+    //     quantity: quantity,
+    //     price: price,
+    //     textNote: note
+    //   }
+    // })
+
+    // The following code is not exactly what I want because it doesn't check for existing entries. 
+    // however, until I can get what's commented out above working, this is what we're going with.
+    // on the bright side, an error from not checking for existing values first is an edge case,
+    // since something would also have to have gone wrong on client side in the first place for it to send a POST
+    // when there is alreay an entry.
+    db.Note.create({
+      CategoryEntryId: categoryId,
+      UserId: userId,
+      quality: quality,
+      quantity: quantity,
+      price: price,
+      textNote: note
+    })
+
+      .then((response) => {
+        // console.log('DEBUG:\n--------------------------------------')
+        // console.log(response)
+        res.json(response);  // When success response is recieved, client side code should re-load the page
+      })
+      .catch((err) => {
+        res.json(`Error: ${err}`);
+        //TODO: Handle erro and inform user
+      });
+
+  });
+
+  // Route for updating a personal rating and/or note TODO:
   app.put("/api/stores/:id/:userID", function (req, res) { });
 
-  // Route for adding a tag to a store category 
+  // Route for adding a tag to a store category  TODO:
   app.put("/api/stores/:id/:category", function (req, res) { });
 
-  // Route for adding a category to a store
+  // Route for adding a category to a store TODO:
   app.post("/api/stores/:id/:category", function (req, res) { });
+
+  // _________________________________________________________________________________________________ \\
+
+  // FOR DEBUG ONLY: SEEDS:
+  app.post("/api/test/seed", function (req, res) {
+
+    // Create a store:
+
+    let categoryList = ['fashion', 'furniture'];
+
+    db.Store.create({
+      name: 'Test Thrift',
+      address: '95 1st Ave, Apt 103, Issaquah, WA 98027',
+      hasFashion: true,
+      hasFurniture: true,
+      hasHomeGoods: false,
+      hasMisc: false
+    }).then((response) => {
+
+      // Grab new store ID from response & validate
+      let newStoreID = response.dataValues.id;
+      assert((newStoreID) => {
+        try { newStoreID = parseInt(newStoreID) } catch (err) { return false };
+        if (isNaN(newStoreID)) { return false };
+        if (newStoreID < 1) { return false };
+        return true;
+      }, "Failed to retrieve proper store ID from database")
+
+
+      // Create as many entries in the categoryEntry table as needed 
+      let promiseList = [];
+      for (let i = 0; i < categoryList.length; i++) {
+        let dbPromise = db.CategoryEntry.create({
+          StoreId: newStoreID,
+          type: categoryList[i]
+        })
+        promiseList.push(dbPromise);
+      }
+
+      // Wait until all the category entries are created, and then report status and new store's id after all operations have succeeded
+      Promise.all(promiseList)
+        .then((results) => {
+
+          // Create a user:
+          db.User.create({
+            userName: 'TestUser001',
+            email: 'testUser@test.test',
+            password: '123456'
+          })
+            .then(function () {
+              res.json('Done')
+            })
+            .catch(function (err) {
+              console.log('caught login error');
+              console.log(err);
+              res.json(err);
+            });
+
+        })
+        .catch((err => {
+          res.json(`Async error during categoryEntry creation:\n${err}`);
+          //TODO: Handle error (probably delete entire store) and inform user
+        }))
+
+
+    }).catch((err) => {
+      res.json(`Async error during store creation:\n${err}`);
+      //TODO: Handle error and inform user
+    })
+
+  });
 
 };
 

@@ -3,18 +3,12 @@ module.exports = function (sequelize, DataTypes) {
 
         quality: {
             type: DataTypes.TINYINT,
-            allowNull: false,
-            defaultValue: 0
         },
         quantity: {
             type: DataTypes.TINYINT,
-            allowNull: false,
-            defaultValue: 0
         },
         price: {
             type: DataTypes.TINYINT,
-            allowNull: false,
-            defaultValue: 0
         },
         textNote: {
             type: DataTypes.TEXT
