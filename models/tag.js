@@ -3,6 +3,14 @@ module.exports = function (sequelize, DataTypes) {
 
         tagText: {
             type: DataTypes.TEXT
+        },
+        ratingTotal: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0
+        },
+        ratingAvg : {
+            type: DataTypes.FLOAT,
+            defaultValue: 0
         }
     });
 
