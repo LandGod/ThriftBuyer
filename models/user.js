@@ -39,6 +39,7 @@ module.exports = function (sequelize, DataTypes) {
   User.associate = models => {
 
     User.hasMany(models.Note);
+    User.hasMany(models.Tag);
   };
 
 

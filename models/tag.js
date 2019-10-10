@@ -9,6 +9,7 @@ module.exports = function (sequelize, DataTypes) {
     Tag.associate = models => {
 
         Tag.belongsTo(models.CategoryEntry);
+        Tag.belongsTo(models.User);
     };
 
 
