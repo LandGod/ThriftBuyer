@@ -1,6 +1,7 @@
 // Requiring our models and passport as we've configured it
 var db = require("../models");
 var passport = require("../config/passport");
+var assert = require('assert').strict;
 
 module.exports = function (app) {
   // Using the passport.authenticate middleware with our local strategy.
@@ -125,7 +126,7 @@ module.exports = function (app) {
 
   // Route for adding a rating and/or note to an existing store for the first time
   // if any of this information already exists for the user then a PUT shoudl be used instead
-  app.post("/api/stores/add-note", function (req, res) {
+  app.post("/api/note", function (req, res) {
 
     // console.log('DEBUG:\n-------------------');
     // console.log(req.body);
@@ -134,65 +135,154 @@ module.exports = function (app) {
     let categoryId = req.body.categoryId;
     let userId = req.body.userId;
 
-    assert(userId, 'No user ID provided.');
-    assert(categoryId, 'No store category identifier provided.')
+    // Check that data is valid. If not, return 'bad request' status code and halt further operations
+    try {
+      assert(userId, 'No user ID provided.');
+      assert(categoryId, 'No store category identifier provided.');
+    } catch (err) {
+      if (err instanceof assert.AssertionError) {
+        res.status(400).end();
+        return;
+      } else {
+        throw (err);
+      }
+    }
 
+    // Build data package, making sure that unsuplied values are set to null since we don't want undefined going into the db
     let quality = req.body.quality || null;
-    console.log(req.body)
-    console.log(quality)
     let quantity = req.body.quantity || null;
-    console.log(quantity)
     let price = req.body.price || null;
-    console.log(price)
     let note = req.body.note || null;
-    console.log(note)
 
-    // Make sure matching entry does not alreayd exist. If not, proceed.
-
-    // The following code is not working. Reason unknown:
-    // db.Note.findOrCreate({
-    //   where: {
-    //     UserId: userId,
-    //     CategoryEntryId: categoryId
-    //   },
-    //   defualts: {
-    //     CategoryEntryId: categoryId,
-    //     UserId: userId,
-    //     quality: quality,
-    //     quantity: quantity,
-    //     price: price,
-    //     textNote: note
-    //   }
-    // })
-
-    // The following code is not exactly what I want because it doesn't check for existing entries. 
-    // however, until I can get what's commented out above working, this is what we're going with.
-    // on the bright side, an error from not checking for existing values first is an edge case,
-    // since something would also have to have gone wrong on client side in the first place for it to send a POST
-    // when there is alreay an entry.
-    db.Note.create({
+    let noteDataPackage = {
       CategoryEntryId: categoryId,
       UserId: userId,
       quality: quality,
       quantity: quantity,
       price: price,
       textNote: note
-    })
+    }
 
-      .then((response) => {
-        // console.log('DEBUG:\n--------------------------------------')
-        // console.log(response)
-        res.json(response);  // When success response is recieved, client side code should re-load the page
+    // Make sure matching entry does not alreayd exist. If not, proceed.
+    db.Note.findOrCreate({
+      where: {
+        UserId: userId,
+        CategoryEntryId: categoryId
+      },
+      defaults: noteDataPackage
+    })
+      .then(() => {
+        // After successfull creation of note, if any ratings have been added,
+        // grab data from the coresponding category in order to update ratings as neccessary
+        if ((quantity || quantity || price) !== null) {
+          let categoryData;
+          db.CategoryEntry.findAll({
+            where: { id: categoryId }
+          })
+            .then((responseA) => {
+              // Then use returned data to to construct an update package for the 
+              categoryData = responseA[0].dataValues;
+              let categoryUpdatePackage = createRatingsUpdatePackage(categoryData, noteDataPackage)
+              // And finally update the category with the ratings changes
+              db.CategoryEntry.update(categoryUpdatePackage, { where: { id: categoryData.id } })
+                .then((responseB) => {
+                  res.status(200).json(responseB);
+                })
+                .catch((err) => {
+                  res.status(500).json(`Error: ${err}`);
+                  //TODO: Handle error and inform user
+                });
+
+            })
+            .catch((err) => {
+              res.status(500).json(`Error: ${err}`);
+              //TODO: Handle error and inform user
+            });
+        }
+
       })
+      // Catch from Note findOrCreate query
       .catch((err) => {
-        res.json(`Error: ${err}`);
-        //TODO: Handle erro and inform user
-      });
+        res.status(500).json(`Error: ${err}`);
+        //TODO: Handle error and inform user
+      })
 
   });
 
-  // Route for updating a personal rating and/or note TODO:
-  app.put("/api/stores/:id/:userID", function (req, res) { });
+  // Route for updating a personal rating and/or note
+  app.put("/api/note", function (req, res) {
+
+    // Extract and parse data from request
+    let noteId = req.body.noteId;
+
+    assert(noteId, 'No note ID key provided.');
+
+    let preUpdateKey = ['quality', 'quantity', 'price', 'textNote'];
+
+    let preUpdatePackage = [
+      req.body.quality,  // 0
+      req.body.quantity, // 1
+      req.body.price,    // 2
+      req.body.note      // 3
+    ];
+
+    // Construct an object specifying the value for each cell to be updates, but not specifying any update if the provided value was undefined
+    // If the user wants to blank out a value by setting it to null or 0, that will be sent to the update, but if no value at all is supplied
+    // Then we'll just ignore that key
+
+    let updatePackage = {};
+    let ratingTypes = [];
+
+    for (let i = 0; i < preUpdatePackage.length; i++) {
+      if (preUpdatePackage[i] !== undefined) {
+        updatePackage[preUpdateKey[i]] = preUpdatePackage[i]
+        if (i !== 'textNote') { ratingTypes.push(preUpdateKey[i]) };
+      }
+    }
+
+    // Before delivering the update, we need to grab the current values so we can see if the changes
+    // will affect any other tables
+    // First we grab the data
+    let oldData;
+    db.Note.findAll({
+      where: { id: noteId }
+    }).then((response1) => {
+      oldData = response1[0].dataValues;
+
+      // Once we have the current (soon to be old) values for the user note, we can use the Fkey from that to grab the categoryEntry data
+      // from there we can do the math to update any global rating averages we need to
+      let currentCategoryData;
+      db.CategoryEntry.findAll({
+        where: { id: oldData.CategoryEntryId }
+      }).then((response2) => {
+        currentCategoryData = response2[0].dataValues;
+        let globalUpdatePackage = createRatingsUpdatePackage(currentCategoryData, updatePackage, oldData);
+
+        // Before we proceed, we'll double check that our new values are valid. If note, we'll manually rebuild the global average figures
+        // TODO: Create function that queries all ratings for store category and rebuilds the averages 
+        // TODO: Find a way to check for data integrity and trigger the rebuild function when discrepencies are detected 
+
+        // Now that we have all of our new data ready to go, we'll send two updates to the database
+        // we'll make both calls one after the other and then collect the resuls only when both succeed
+        let dbUpdates = [];
+        dbUpdates.push(db.Note.update(updatePackage, { where: { id: noteId } }));
+        dbUpdates.push(db.CategoryEntry.update(globalUpdatePackage, { where: { id: currentCategoryData.id } }));
+        Promise.all(dbUpdates)
+          .then((response) => {
+            res.status(200).json([response[0], response[1]])
+          })
+          .catch((err) => { res.status(500).json(err) });
+
+      })
+        .catch((err) => {
+          res.status(500).json(err);
+        });
+    })
+      .catch((err) => {
+        res.status(500).json(err);
+      });
+
+  });
 
   // Route for adding a tag to a store category  TODO:
   app.put("/api/stores/:id/:category", function (req, res) { });
@@ -273,19 +363,133 @@ module.exports = function (app) {
 
 };
 
-
-// I like being able to assert things, a la Python, so I've added my own assertion function here
-// complete with custom Error object
-class AssertionError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "AssertionError";
-  }
+// Function for finding out if the value is defined, but falsy
+function isNill(val) {
+  if (val === null || val === 0) { return true };
+  return false;
 };
 
-function assert(value, message = "") {
-  if (!value) {
-    throw (AssertionError(message))
+// Takes current data from a user note and corespoinding category, together with new data from a user note
+// and generates the neccessary data package to update the category accordingly 
+function createRatingsUpdatePackage(currentCategoryData, newNoteData, oldNoteData = { quality: 0, quantity: 0, price: 0 }) {
+  let ratingTypes = [];
+  if (newNoteData.quantity !== undefined) { ratingTypes.push('quantity') };
+  if (newNoteData.quality !== undefined) { ratingTypes.push('quality') };
+  if (newNoteData.price !== undefined) { ratingTypes.push('price') };
+  let globalUpdatePackage = {};
+  for (let i = 0; i < ratingTypes.length; i++) {
+
+    if (
+      (oldNoteData[ratingTypes[i]] != newNoteData[ratingTypes[i]]) && (
+        !(isNill(oldNoteData[ratingTypes[i]]) && isNill(newNoteData[ratingTypes[i]])
+        ))
+    ) {
+
+      let oldAvg = parseFloat(currentCategoryData[`${ratingTypes[i]}Avg`]);
+      if (isNaN(oldAvg)) { oldAvg = 0 };
+      let oldTotal = parseInt(currentCategoryData[`${ratingTypes[i]}Total`]);
+      if (isNaN(oldTotal)) { oldTotal = 0 };
+      let newRating = parseInt(newNoteData[`${ratingTypes[i]}`]);
+      if (isNaN(newRating)) { newRating = 0 };
+      let oldRating = parseInt(oldNoteData[`${ratingTypes[i]}`]);
+      if (isNaN(oldRating)) { oldRating = 0 };
+
+      // If the old rating was nill, then we'll need to update the global ratings average as well as increment the number of total ratings
+      if (isNill(oldNoteData[ratingTypes[i]])) {
+
+        globalUpdatePackage[`${ratingTypes[i]}Avg`] = ((oldAvg * oldTotal) + newRating) / (oldTotal + 1);
+        globalUpdatePackage[`${ratingTypes[i]}Total`] = oldTotal + 1;
+
+      }
+      // If the new rating is being set to null, then we'll need to update the global ratings and decrement the total number of ratings
+      else if (isNill(newNoteData[ratingTypes[i]])) {
+
+        // First we need to check for the edge case of removing the last/only rating as that will lead to a 0 divided by 0 situation
+        // also there is no point in doing math to figure out the number or average if we already know we'll have no more ratings. Ie 0 is 0 is 0
+        if (oldTotal === 1) {
+          globalUpdatePackage[`${ratingTypes[i]}Avg`] = 0;
+          globalUpdatePackage[`${ratingTypes[i]}Total`] = 0;
+        } else {
+          // If we didn't encounter the edge case, we can use the normal logic:
+          globalUpdatePackage[`${ratingTypes[i]}Avg`] = ((oldAvg * oldTotal) - oldRating) / (oldTotal - 1);
+          globalUpdatePackage[`${ratingTypes[i]}Total`] = oldTotal - 1;
+        }
+      }
+
+      // Finally, if we're changing from non-null to non-null value, then we can simply edit the average and leave the total alone
+      else if ((newNoteData[ratingTypes[i]]) && (oldNoteData[ratingTypes[i]])) {
+
+        globalUpdatePackage[`${ratingTypes[i]}Avg`] = (((oldAvg * oldTotal) - oldRating) + newRating) / (oldTotal);
+
+      }
+
+      // Above was all cases, so if the below else clause triggers it means an error state
+      else {
+
+        let err = new Error('An uknown error occured while attempting to parse date for the update.');
+        throw (err);
+      }
+    }
   }
-  else { return true };
+  return globalUpdatePackage;
+
 }
+
+// For debugging purposes only
+class PsuedoError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "PsuedoError";
+  }
+}
+
+var logStatus = (variablesToPrint) => {
+
+  console.log('\n----------------------------------\nDEBUG:\n----------------------------------');
+
+  // Now we go though a WHOLE rigamaroll just to grab the one line we want out of the stack trace and ignore the rest:
+  let err;
+  try {
+    let psuedoError = new PsuedoError('Not a real error.')
+    throw (psuedoError)
+  }
+  catch (someError) {
+    if (someError instanceof PsuedoError) {
+      err = someError
+    }
+    else {
+      console.log('Oops logStatus function caught an error it was not supposed to.')
+      console.log(someError)
+      throw (someError)
+    }
+  }
+
+  let caller_lines = err.stack.split("\n");
+  let caller_line;
+  let flag = false;
+  for (let logj = 0; logj < caller_lines.length; logj++) {
+    if (caller_lines[logj].includes('api-routes.js')) {
+      if (flag) {
+        caller_line = caller_lines[logj];
+        break;
+      } else {
+        flag = true;
+      }
+    };
+  };
+
+  let index = caller_line.indexOf("at ");
+  let clean = caller_line.slice(index + 2, caller_line.length);
+  console.log(clean);
+
+  // Now, having gotten and printed the single stack trace line we want, we print the variable values entered by the user
+  let printKeys = Object.keys(variablesToPrint);
+  for (let logi = 0; logi < printKeys.length; logi++) {
+    console.log(`\nValue for: ${printKeys[logi]}`);
+    console.log(variablesToPrint[printKeys[logi]]);
+
+  }
+
+  console.log('----------------------------------\n');
+
+};
