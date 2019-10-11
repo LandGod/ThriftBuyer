@@ -57,7 +57,7 @@ module.exports = function (app) {
     }
   });
 
-  // Route for performing a store seach TODO:
+  // Route for performing a store seach using various parameters
   app.get("/api/search", function (req, res) {
     let request = req.body;
 
@@ -95,17 +95,32 @@ module.exports = function (app) {
         }]
     })
       .then((response) => {
+        //TODO: I don't think I can reasonably do address checking/comparison in the main query 
+        // so I should add that in here once I get the google maps API up and running for this project
         res.status(200).json(response);
       })
       .catch((error) => {
         console.log(error);
-        res.status(500).json(error);
+        res.status(500).json({error: error.message, stack: error.stack});
       });
 
   });
 
-  // Route for getting info for a particular store TODO:
-  app.get("/api/stores", function (req, res) { });
+  // Route for getting info for a particular store via its unique id
+  app.get("/api/stores", function (req, res) { 
+    let storeId = req.body.storeId;
+
+    db.Store.findOne({
+      where: {id: storeId}
+    })
+    .then((response) => {
+      res.status(200).json(response)
+    })
+    .catch((error) => {
+      res.status(500).json({error: error})
+    })
+
+   });
 
   // Rote for adding a new store
   app.post("/api/stores", function (req, res) {
