@@ -44,7 +44,15 @@ module.exports = function (sequelize, DataTypes) {
         CategoryEntry.hasMany(models.Tag);
     };
 
+    CategoryEntry.addHook('afterCreate', (categoryEntry) => {
 
+        return sequelize.models.Tag.create({
+            CategoryEntryId: categoryEntry.id,
+            tagText: 'DEAFULTTAG-DONOTDELET',
+            ratingTotal: 999,
+            ratingAvg: 999
+        })
+      });
 
     return CategoryEntry;
 };
