@@ -4,6 +4,10 @@ var passport = require("../config/passport");
 var assert = require('assert').strict;
 
 module.exports = function (app) {
+
+  // Import Sequelize query operators
+  const Op = db.Sequelize.Op;
+
   // Using the passport.authenticate middleware with our local strategy.
   // If the user has valid login credentials, send them to the members page.
   // Otherwise the user will be sent an error
@@ -52,7 +56,43 @@ module.exports = function (app) {
   });
 
   // Route for performing a store seach TODO:
-  app.get("/api/search", function (req, res) { });
+  app.get("/api/search", function (req, res) {
+    let request = req.body;
+
+    // Search Parameters=default:
+    // Category=any, Tag=None, address=none, nearAddress=noLimit, minimumRating=none
+
+    //TODO: Data validation for categories
+    try { } catch (error) { res.status(400).json(error); return };
+
+    //TODO: Data validation for address
+    try { } catch (error) { res.status(400).json(error); return };
+
+    //TODO: Data validation for ratings
+    try { } catch (error) { res.status(400).json(error); return };
+
+    db.Store.findAll({
+      include: [
+        {
+          model: db.CategoryEntry, 
+          // If a type is specified, we require any category to include that value for type in order to be a match
+          // If, however, no value is specified by the user for type (ie: category type), then we say type: wildcard
+          where: { type: request.type || {[Op.like]: "%"} },
+          include : [{
+            model: db.Tag,
+            where: {tagText: request.tag || {[Op.like]: "%"}}
+          }]
+        }]
+    })
+      .then((response) => {
+        res.status(200).json(response);
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(500).json(error);
+      });
+
+  });
 
   // Route for getting info for a particular store TODO:
   app.get("/api/stores", function (req, res) { });
@@ -112,7 +152,7 @@ module.exports = function (app) {
         })
           // Report any errors to the console
           .catch((err => {
-            res.json(`Async error during categoryEntry creation:\n${err}`);
+            res.json({errorInfo:`Async error during categoryEntry creation:\n${err}`, stack: err.stack});
             //TODO: Handle error (probably delete entire store) and inform user
           }))
 
@@ -356,13 +396,13 @@ module.exports = function (app) {
         defaults: { StoreId: StoreId, type: type }
       }))
 
-      let storeUpdatePackage = {};
-      // construct proper column name for store column specifying category as object key and set value to true
-      let normalizedCategoryName = (type) => {
-        if (type === 'home goods') {return 'HomeGoods'} // if special case, get special treatment
-        else {return type.charAt(0).toUpperCase() + type.slice(1)} // else capitalize
-      }
-      storeUpdatePackage[`has${normalizedCategoryName(type)}`] = true;
+    let storeUpdatePackage = {};
+    // construct proper column name for store column specifying category as object key and set value to true
+    let normalizedCategoryName = (type) => {
+      if (type === 'home goods') { return 'HomeGoods' } // if special case, get special treatment
+      else { return type.charAt(0).toUpperCase() + type.slice(1) } // else capitalize
+    }
+    storeUpdatePackage[`has${normalizedCategoryName(type)}`] = true;
 
     databaseQueries.push(
       db.Store.update(
@@ -377,7 +417,7 @@ module.exports = function (app) {
       })
       // Report any errors to the console
       .catch((err => {
-        res.json(`Async error during categoryEntry creation:\n${err}`);
+        res.json({errorInfo:`Async error during categoryEntry creation:\n${err}`, stack: err.stack});
         //TODO: Handle error (probably delete entire store) and inform user
       }))
   });
@@ -387,69 +427,75 @@ module.exports = function (app) {
   // FOR DEBUG ONLY: SEEDS:
   app.post("/api/test/seed", function (req, res) {
 
-    // Create a store:
+    // Create some stores:
+    async function makeAStore(nm, catList, adrs) {
 
-    let categoryList = ['fashion', 'furniture'];
+      return new Promise((resolve) => {
 
-    db.Store.create({
-      name: 'Test Thrift',
-      address: '95 1st Ave, Apt 103, Issaquah, WA 98027',
-      hasFashion: true,
-      hasFurniture: true,
-      hasHomeGoods: false,
-      hasMisc: false
-    }).then((response) => {
+        let categoryList = catList;
 
-      // Grab new store ID from response & validate
-      let newStoreID = response.dataValues.id;
-      assert((newStoreID) => {
-        try { newStoreID = parseInt(newStoreID) } catch (err) { return false };
-        if (isNaN(newStoreID)) { return false };
-        if (newStoreID < 1) { return false };
-        return true;
-      }, "Failed to retrieve proper store ID from database")
+        db.Store.create({
+          name: nm,
+          address: adrs,
+          hasFashion: catList.includes('fashion'),
+          hasFurniture: catList.includes('furniture'),
+          hasHomeGoods: catList.includes('home goods'),
+          hasMisc: catList.includes('misc')
+        }).then((response) => {
+
+          // Grab new store ID from response & validate
+          let newStoreID = response.dataValues.id;
+          assert((newStoreID) => {
+            try { newStoreID = parseInt(newStoreID) } catch (err) { return false };
+            if (isNaN(newStoreID)) { return false };
+            if (newStoreID < 1) { return false };
+            return true;
+          }, "Failed to retrieve proper store ID from database")
 
 
-      // Create as many entries in the categoryEntry table as needed 
-      let promiseList = [];
-      for (let i = 0; i < categoryList.length; i++) {
-        let dbPromise = db.CategoryEntry.create({
-          StoreId: newStoreID,
-          type: categoryList[i]
-        })
-        promiseList.push(dbPromise);
-      }
-
-      // Wait until all the category entries are created, and then report status and new store's id after all operations have succeeded
-      Promise.all(promiseList)
-        .then((results) => {
-
-          // Create a user:
-          db.User.create({
-            userName: 'TestUser001',
-            email: 'testUser@test.test',
-            password: '123456'
-          })
-            .then(function () {
-              res.json('Done')
+          // Create as many entries in the categoryEntry table as needed 
+          let promiseList = [];
+          for (let i = 0; i < categoryList.length; i++) {
+            let dbPromise = db.CategoryEntry.create({
+              StoreId: newStoreID,
+              type: categoryList[i]
             })
-            .catch(function (err) {
-              console.log('caught login error');
-              console.log(err);
-              res.json(err);
-            });
+            promiseList.push(dbPromise);
+          }
 
+          // Wait until all the category entries are created, and then report status and new store's id after all operations have succeeded
+          resolve(Promise.all(promiseList))
         })
-        .catch((err => {
-          res.json(`Async error during categoryEntry creation:\n${err}`);
-          //TODO: Handle error (probably delete entire store) and inform user
-        }))
+      })
+    }
+    Promise.all([
+      makeAStore("Joe's Example Business", ['furniture', 'home goods', 'misc'], "95 7th Ave SE, Suit 17, Seattle, WA 98026"),
+      makeAStore("Greg's Salvage", ['furniture', 'fashion', 'misc'], "403 Archon Way NW, Seattle, WA 98026"),
+      makeAStore("BadWill", ['furniture'], "1 Middle Way, Nowhere, AZ 42357")
+    ])
+      // Then some create users
+      .then(() => {
 
+        // Create a users:
+        db.User.create({
+          userName: 'TestUser001',
+          email: 'testUser@test.test',
+          password: '123456'
+        })
+          .then(function () {
+            res.json('Done')
+          })
+          .catch(function (err) {
+            console.log('caught login error');
+            console.log(err);
+            res.json(err);
+          });
 
-    }).catch((err) => {
-      res.json(`Async error during store creation:\n${err}`);
-      //TODO: Handle error and inform user
-    })
+      })
+      .catch((err => {
+        res.json({errorInfo:`Async error during categoryEntry creation:\n${err}`, stack: err.stack});
+        //TODO: Handle error (probably delete entire store) and inform user
+      }))
 
   });
   // END DEBUG ROUTES
