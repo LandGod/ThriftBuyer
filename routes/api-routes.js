@@ -285,10 +285,37 @@ module.exports = function (app) {
   });
 
   // Route for adding a tag to a store category  TODO:
-  app.put("/api/stores/:id/:category", function (req, res) { });
+  app.put("/api/tag", function (req, res) { 
+
+    // Grab request information and parse
+    let tagInfoPackage = req.body
+    tagInfoPackage.tagText = tagInfoPackage.tagText.trim();
+
+    // Validate that incoming information is useable and propper 
+    try {
+      assert(tagInfoPackage.tagText, 'Tag text may not be blank');
+      assert(!isNaN(parseInt(tagInfoPackage.categoryId)), 'Invalid category ID');
+      assert(parseInt(tagInfoPackage.categoryId) > 0, 'Invalid category ID');
+      assert(tagInfoPackage.userId, 'Missing user ID of tag creator');
+      assert(!isNaN(parseInt(tagInfoPackage.userId)), 'Invalid user ID');
+    } catch(err) {
+      res.status(400).message(err.message);
+    }
+
+    // If we pass the initial validation, then we'll do the post as a findOrCreate, so if the tag is a duplicate, it will be rejected
+    db.Tag.findOrCreate({tagInfoPackage},{where: {categoryEntryId: tagInfoPackage.categoryId, tagText: tagText}})
+    .then((response) => {
+      if (response[0] > 0) {res.status(400).message("Tag already exists.")};
+      res.status(200).json(response)
+    })
+    .catch((err) => {
+      res.status(500).json(err);
+    })
+
+  });
 
   // Route for adding a category to a store TODO:
-  app.post("/api/stores/:id/:category", function (req, res) { });
+  app.post("/api/category", function (req, res) { });
 
   // _________________________________________________________________________________________________ \\
 
