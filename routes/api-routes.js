@@ -7,6 +7,8 @@ module.exports = function (app) {
 
   // Import Sequelize query operators
   const Op = db.Sequelize.Op;
+  // Define my best attempt to make a Sequelize wildcard
+  const WILDCARD = { [Op.like]: "%" }
 
   // Using the passport.authenticate middleware with our local strategy.
   // If the user has valid login credentials, send them to the members page.
@@ -74,13 +76,21 @@ module.exports = function (app) {
     db.Store.findAll({
       include: [
         {
-          model: db.CategoryEntry, 
-          // If a type is specified, we require any category to include that value for type in order to be a match
-          // If, however, no value is specified by the user for type (ie: category type), then we say type: wildcard
-          where: { type: request.type || {[Op.like]: "%"} },
-          include : [{
+          model: db.CategoryEntry,
+          
+          // We're using `|| WILDCARD` to specify that if no value is provided, the search should return any value for that query
+          // WILDCARD === {[Op.like]: "%"}
+          where: {
+            // If a type is specified, we require any category to include that value for type in order to be a match
+            type: request.type || WILDCARD,
+            // If a minimum rating is supplied, we'll for that to, or just say minimum rating of 0 or greater, since no rating can be lower
+            qualityAvg: { [Op.gte]: req.minimumQuality } || 0,
+            quantityAvg: { [Op.gte]: req.minimumQuantity } || 0,
+            priceAvg: { [Op.gte]: req.minimumPrice } || 0
+          },
+          include: [{
             model: db.Tag,
-            where: {tagText: request.tag || {[Op.like]: "%"}}
+            where: { tagText: request.tag || WILDCARD }
           }]
         }]
     })
@@ -152,7 +162,7 @@ module.exports = function (app) {
         })
           // Report any errors to the console
           .catch((err => {
-            res.json({errorInfo:`Async error during categoryEntry creation:\n${err}`, stack: err.stack});
+            res.json({ errorInfo: `Async error during categoryEntry creation:\n${err}`, stack: err.stack });
             //TODO: Handle error (probably delete entire store) and inform user
           }))
 
@@ -417,7 +427,7 @@ module.exports = function (app) {
       })
       // Report any errors to the console
       .catch((err => {
-        res.json({errorInfo:`Async error during categoryEntry creation:\n${err}`, stack: err.stack});
+        res.json({ errorInfo: `Async error during categoryEntry creation:\n${err}`, stack: err.stack });
         //TODO: Handle error (probably delete entire store) and inform user
       }))
   });
@@ -477,11 +487,18 @@ module.exports = function (app) {
       .then(() => {
 
         // Create a users:
-        db.User.create({
-          userName: 'TestUser001',
-          email: 'testUser@test.test',
-          password: '123456'
-        })
+        let userCreate = function (name, email, password) {
+          return db.User.create({
+            userName: name,
+            email: email,
+            password: password
+          })
+        }
+        Promise.all([
+          userCreate('TestUserOne', 'UserOne@test.domain', '123456'),
+          userCreate('TestUserTwo', 'UserTwo@test.domain', '123456'),
+          userCreate('TestUserThree', 'UserThree@test.domain', '123456'),
+        ])
           .then(function () {
             res.json('Done')
           })
@@ -493,7 +510,7 @@ module.exports = function (app) {
 
       })
       .catch((err => {
-        res.json({errorInfo:`Async error during categoryEntry creation:\n${err}`, stack: err.stack});
+        res.json({ errorInfo: `Async error during categoryEntry creation:\n${err}`, stack: err.stack });
         //TODO: Handle error (probably delete entire store) and inform user
       }))
 
@@ -501,7 +518,7 @@ module.exports = function (app) {
   // END DEBUG ROUTES
   // _________________________________________________________________________________________________ \\
 
-};
+}; // End export statment
 
 // Function for finding out if the value is defined, but falsy
 function isNill(val) {
@@ -575,7 +592,7 @@ function createRatingsUpdatePackage(currentCategoryData, newNoteData, oldNoteDat
 
 }
 
-// For debugging purposes only
+// For debugging purposes only ________________________________________________________________________________________ \\
 class PsuedoError extends Error {
   constructor(message) {
     super(message);
