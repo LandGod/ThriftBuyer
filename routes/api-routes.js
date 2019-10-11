@@ -285,7 +285,7 @@ module.exports = function (app) {
 
   });
 
-  // Route for adding a tag to a store category  TODO:
+  // Route for adding a tag to a store category
   app.post("/api/tag", function (req, res) {
 
     // Grab request information and parse
@@ -311,6 +311,7 @@ module.exports = function (app) {
       defaults: tagInfoPackage
     })
       .then((response) => {
+        // TODO: Test the below code for reporting failure due to duplicate tag
         if (response[0] > 0) { res.status(400).send("Tag already exists.") };
         res.status(200).json(response);
       })
@@ -322,8 +323,64 @@ module.exports = function (app) {
 
   });
 
-  // Route for adding a category to a store TODO:
-  app.post("/api/category", function (req, res) { });
+  // Route for adding a category to a store 
+  app.post("/api/category", function (req, res) {
+    let StoreId = req.body.StoreId;
+    let type = req.body.type;
+
+    try {
+      type = type.trim().toLowerCase();
+      assert(['fashion', 'furniture', 'home goods', 'misc'].includes(type));
+    } catch (error) {
+      res.status(400).send('Invalid store type');
+    };
+
+    try {
+      assert((StoreId) => {
+        try { StoreId = parseInt(StoreId) } catch (err) { return false };
+        if (isNaN(StoreId)) { return false };
+        if (StoreId < 1) { return false };
+        return true;
+      }, "Invalid Store ID")
+    } catch (err) {
+      res.status(400).send('Invalid Store ID to add category')
+    };
+
+    // Create new categoryEntry table row, while making sure this isn't a duplicate, 
+    // then update Store entry to reflect existence of category 
+    // We'll add both query Promises to a list so we can handle both results at the same time via Promise.all
+    let databaseQueries = [];
+    databaseQueries.push(
+      db.CategoryEntry.findOrCreate({
+        where: { StoreId: StoreId, type: type },
+        defaults: { StoreId: StoreId, type: type }
+      }))
+
+      let storeUpdatePackage = {};
+      // construct proper column name for store column specifying category as object key and set value to true
+      let normalizedCategoryName = (type) => {
+        if (type === 'home goods') {return 'HomeGoods'} // if special case, get special treatment
+        else {return type.charAt(0).toUpperCase() + type.slice(1)} // else capitalize
+      }
+      storeUpdatePackage[`has${normalizedCategoryName(type)}`] = true;
+
+    databaseQueries.push(
+      db.Store.update(
+        storeUpdatePackage,
+        {
+          where: { id: StoreId }
+        })
+    )
+    Promise.all(databaseQueries)
+      .then((results) => {
+        res.json(results);
+      })
+      // Report any errors to the console
+      .catch((err => {
+        res.json(`Async error during categoryEntry creation:\n${err}`);
+        //TODO: Handle error (probably delete entire store) and inform user
+      }))
+  });
 
   // _________________________________________________________________________________________________ \\
 
@@ -500,12 +557,12 @@ var logStatus = (variablesToPrint) => {
       throw (someError)
     }
   }
-
+  let currentFileName = 'api-routes.js';
   let caller_lines = err.stack.split("\n");
   let caller_line;
   let flag = false;
   for (let logj = 0; logj < caller_lines.length; logj++) {
-    if (caller_lines[logj].includes('api-routes.js')) {
+    if (caller_lines[logj].includes(currentFileName)) {
       if (flag) {
         caller_line = caller_lines[logj];
         break;
@@ -515,9 +572,9 @@ var logStatus = (variablesToPrint) => {
     };
   };
 
-  let index = caller_line.indexOf("at ");
-  let clean = caller_line.slice(index + 2, caller_line.length);
-  console.log(clean);
+  let index = caller_line.indexOf("js:");
+  let clean = caller_line.slice(index + 3, caller_line.length);
+  console.log('at line: ' + clean);
 
   // Now, having gotten and printed the single stack trace line we want, we print the variable values entered by the user
   let printKeys = Object.keys(variablesToPrint);
