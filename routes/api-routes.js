@@ -84,9 +84,9 @@ module.exports = function (app) {
             // If a type is specified, we require any category to include that value for type in order to be a match
             type: request.type || WILDCARD,
             // If a minimum rating is supplied, we'll for that to, or just say minimum rating of 0 or greater, since no rating can be lower
-            qualityAvg: { [Op.gte]: req.minimumQuality } || 0,
-            quantityAvg: { [Op.gte]: req.minimumQuantity } || 0,
-            priceAvg: { [Op.gte]: req.minimumPrice } || 0
+            qualityAvg: { [Op.gte]: request.minimumQuality || 0},
+            quantityAvg: { [Op.gte]: request.minimumQuantity || 0},
+            priceAvg: { [Op.gte]: request.minimumPrice || 0}
           },
           include: [{
             model: db.Tag,
