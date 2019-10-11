@@ -245,7 +245,8 @@ module.exports = function (app) {
     // First we grab the data
     let oldData;
     db.Note.findAll({
-      where: { id: noteId }
+      where: { id: noteId },
+      // include: [db.CategoryEntry]    // TODO: Reforfactor this and below to use include instead of doing two seperate queries 
     }).then((response1) => {
       oldData = response1[0].dataValues;
 
@@ -285,32 +286,39 @@ module.exports = function (app) {
   });
 
   // Route for adding a tag to a store category  TODO:
-  app.put("/api/tag", function (req, res) { 
+  app.post("/api/tag", function (req, res) {
 
     // Grab request information and parse
-    let tagInfoPackage = req.body
-    tagInfoPackage.tagText = tagInfoPackage.tagText.trim();
-
+    let tagInfoPackage = req.body;
     // Validate that incoming information is useable and propper 
     try {
+      assert(tagInfoPackage.tagText, 'No data tag text recieved.')
+      tagInfoPackage.tagText = tagInfoPackage.tagText.trim().toLowerCase();
       assert(tagInfoPackage.tagText, 'Tag text may not be blank');
-      assert(!isNaN(parseInt(tagInfoPackage.categoryId)), 'Invalid category ID');
-      assert(parseInt(tagInfoPackage.categoryId) > 0, 'Invalid category ID');
-      assert(tagInfoPackage.userId, 'Missing user ID of tag creator');
-      assert(!isNaN(parseInt(tagInfoPackage.userId)), 'Invalid user ID');
-    } catch(err) {
-      res.status(400).message(err.message);
+      assert(!isNaN(parseInt(tagInfoPackage.CategoryEntryId)), 'Invalid category ID');
+      assert(parseInt(tagInfoPackage.CategoryEntryId) > 0, 'Invalid category ID');
+      assert(tagInfoPackage.UserId, 'Missing user ID of tag creator');
+      assert(!isNaN(parseInt(tagInfoPackage.UserId)), 'Invalid user ID');
+    } catch (err) {
+      console.log(err);
+      res.status(400).send(err);
+      return;
     }
 
     // If we pass the initial validation, then we'll do the post as a findOrCreate, so if the tag is a duplicate, it will be rejected
-    db.Tag.findOrCreate({tagInfoPackage},{where: {categoryEntryId: tagInfoPackage.categoryId, tagText: tagText}})
-    .then((response) => {
-      if (response[0] > 0) {res.status(400).message("Tag already exists.")};
-      res.status(200).json(response)
+    db.Tag.findOrCreate({
+      where: { CategoryEntryId: tagInfoPackage.CategoryEntryId, tagText: tagInfoPackage.tagText },
+      defaults: tagInfoPackage
     })
-    .catch((err) => {
-      res.status(500).json(err);
-    })
+      .then((response) => {
+        if (response[0] > 0) { res.status(400).send("Tag already exists.") };
+        res.status(200).json(response);
+      })
+      .catch((err) => {
+        console.log(err)
+        res.status(500).json(err);
+        return;
+      })
 
   });
 
@@ -387,6 +395,8 @@ module.exports = function (app) {
     })
 
   });
+  // END DEBUG ROUTES
+  // _________________________________________________________________________________________________ \\
 
 };
 
