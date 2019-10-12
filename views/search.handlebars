@@ -42,22 +42,22 @@
             <div class="form-group col-md-5 d-block">
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="minQualityOptions" id="minQuality1"
-                        value="option0" checked>
+                        value="0" checked>
                     <label class="form-check-label" for="minQuality1">(none)</label>
                 </div>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="minQualityOptions" id="minQuality1"
-                        value="option1">
+                        value="1">
                     <label class="form-check-label" for="minQuality1">1</label>
                 </div>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="minQualityOptions" id="minQuality2"
-                        value="option2">
+                        value="2">
                     <label class="form-check-label" for="minQuality2">2</label>
                 </div>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="minQualityOptions" id="minQuality3"
-                        value="option3">
+                        value="3">
                     <label class="form-check-label" for="minQuality3">3</label>
                 </div>
             </div>
@@ -69,22 +69,22 @@
             <div class="form-group col-md-5 d-block">
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="minQuantityOptions" id="minQuantity1"
-                        value="option0" checked>
+                        value="0" checked>
                     <label class="form-check-label" for="minQuantity1">(none)</label>
                 </div>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="minQuantityOptions" id="minQuantity1"
-                        value="option1">
+                        value="1">
                     <label class="form-check-label" for="minQuantity1">1</label>
                 </div>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="minQuantityOptions" id="minQuantity2"
-                        value="option2">
+                        value="2">
                     <label class="form-check-label" for="minQuantity2">2</label>
                 </div>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="minQuantityOptions" id="minQuantity3"
-                        value="option3">
+                        value="3">
                     <label class="form-check-label" for="minQuantity3">3</label>
                 </div>
             </div>
@@ -95,25 +95,29 @@
             <h5>Price: </h5>
             <div class="form-group col-md-5 d-block">
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice1" value="option0"
+                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice1" value="0"
                         checked>
                     <label class="form-check-label" for="minPrice1">(none)</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice1" value="option1">
+                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice1" value="1">
                     <label class="form-check-label" for="minPrice1">1</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice2" value="option2">
+                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice2" value="2">
                     <label class="form-check-label" for="minPrice2">2</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice3" value="option3">
+                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice3" value="3">
                     <label class="form-check-label" for="minPrice3">3</label>
                 </div>
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" id='searchSubmit' class="btn btn-primary">Submit</button>
     </div>
 </form>
+
+<div class="container" id="resultsContainer">
+
+</div>

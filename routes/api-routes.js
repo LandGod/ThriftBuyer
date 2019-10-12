@@ -59,7 +59,7 @@ module.exports = function (app) {
 
   // Route for performing a store seach using various parameters
   app.get("/api/search", function (req, res) {
-    let request = req.body;
+    let request = req.query;
 
     // Search Parameters=default:
     // Category=any, Tag=None, address=none, nearAddress=noLimit, minimumRating=none
