@@ -1,5 +1,6 @@
 // Requiring path to so we can use relative routes to our HTML files
 var path = require("path");
+var db = require("../models");
 
 // Requiring our custom middleware for checking if a user is logged in
 var isAuthenticated = require("../config/middleware/isAuthenticated");
@@ -7,33 +8,40 @@ var isAuthenticated = require("../config/middleware/isAuthenticated");
 module.exports = function (app) {
 
   app.get("/", function (req, res) {
-    res.sendFile(path.join(__dirname, "../public/search.html"))
+    res.render("search")
   });
 
   app.get("/stores/:id", function (req, res) {
-    res.message(`Store #${req.paramas.id}`)
-    //TODO: Figure out this mess:
-    // $.ajax({
-    //   method: 'GET',
-    //   url: path.join(__dirname, `/api/stores`),
-    //   body: {id: req.params.id},
-    //   success: function (dbData) {
 
-    //     let categories = [];
-    //     let possibleCategories = ['Fashion', 'Furniture', 'HomeGoods', 'Misc'];
-    //     for (let i = 0; i < possibleCategories.length; i++) {
-    //       if (dbData[`has${possibleCategories[i]}`]) { categories.push(possibleCategories[i]) }
-    //     }
+    db.Store.findOne({
+      where: { id: req.params.id }
+    })
+      .then((dbData) => {
 
-    //     res.render("store", {
-    //       name: dbData.name,
-    //       address: dbData.address,
-    //       categories: categories,
-    //       pageSpecificJs: '/public/js/store.js',
-    //       pageTitle: `ThriftShopper - ${dbData.name}`
-    //     })
-    //   }
-    // })
+        if (dbData !== null) {
+          let categories = [];
+          let possibleCategories = ['Fashion', 'Furniture', 'HomeGoods', 'Misc'];
+          for (let i = 0; i < possibleCategories.length; i++) {
+            if (dbData[`has${possibleCategories[i]}`]) { categories.push(possibleCategories[i]) }
+          }
+
+          res.render("store", {
+            name: dbData.name,
+            address: dbData.address,
+            categories: categories,
+            pageSpecificJs: '/public/js/store.js',
+            pageTitle: `ThriftShopper - ${dbData.name}`
+          })
+        } else {
+          // If the server return no data, give the user a page stub informing them that no such store exists
+          res.render("store404", {id: req.params.id})
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+        res.status(500).send('Status 500 - Internal server error')
+      })
+
   });
 
   app.get("/login", function (req, res) {
