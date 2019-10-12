@@ -50,7 +50,7 @@ module.exports = function (app) {
   app.get("/login", function (req, res) {
     // Figure out where the user came from so that we can send them back there after login (unless they came from external)
     let backURL = req.header('Referer') || '/';
-    if ((backURL.indexOf('localhost') === -1 && (backURL.indexOf('TODO: Change this to my heroku root url') === -1))) { backURL = '/' };
+    if ((backURL.indexOf('localhost') === -1 && (backURL.indexOf('tranquil-temple-50803.herokuapp.com/') === -1))) { backURL = '/' };
 
     // If the user already has an account, bounce them back to the page they were already one
     if (req.user) {
