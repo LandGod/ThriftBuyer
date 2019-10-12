@@ -8,7 +8,10 @@ var isAuthenticated = require("../config/middleware/isAuthenticated");
 module.exports = function (app) {
 
   app.get("/", function (req, res) {
-    res.render("search")
+    res.render("search", {
+      pageTitle: 'Search Stores | ThriftBuyer',
+      pageSpecificJs: '/js/search.js'
+    });
   });
 
   app.get("/stores/:id", function (req, res) {

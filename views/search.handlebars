@@ -1,26 +1,119 @@
 <form>
-    <div class="form-group">
-        <label for="categorySelect">Category</label>
-        <select class="form-control" id="categorySelect">
-            <option>Furniture</option>
-            <option>Fashion</option>
-            <option>Home Goods</option>
-            <option>Misc</option>
-        </select>
+    <div class="container">
+
+        <div class="form-row">
+            <h1>Search Stores</h1>
+        </div>
+
+        <div class="form-row">
+            <br>
+        </div>
+
+        <div class="form-row">
+
+            {{!-- Category Select --}}
+            <div class="form-group-inline col-6, col-md-5">
+                <label class="h4" for="categorySelect">Category</label>
+                <select class="form-control" id="categorySelect">
+                    <option>(any)</option>
+                    <option>Furniture</option>
+                    <option>Fashion</option>
+                    <option>Home Goods</option>
+                    <option>Misc</option>
+                </select>
+            </div>
+
+            {{!-- Tag Field --}}
+            <div class="form-group-inline col-6, col-md-5">
+                <label class="h4" for="tagField">Tag</label>
+                <input type="text" class="form-control" id="tagField" aria-describedby="tagHelp"
+                    placeholder="Enter tag (optional)">
+                <small id="tagHelp" class="form-text text-muted">Please only search one tag at a time.</small>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label class="h4">Minimum Rating</label>
+        </div>
+
+        {{!-- Quality Rating Select --}}
+        <div class="form-group form-row">
+            <h5>Quality: </h5>
+            <div class="form-group col-md-5 d-block">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minQualityOptions" id="minQuality1"
+                        value="option0" checked>
+                    <label class="form-check-label" for="minQuality1">(none)</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minQualityOptions" id="minQuality1"
+                        value="option1">
+                    <label class="form-check-label" for="minQuality1">1</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minQualityOptions" id="minQuality2"
+                        value="option2">
+                    <label class="form-check-label" for="minQuality2">2</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minQualityOptions" id="minQuality3"
+                        value="option3">
+                    <label class="form-check-label" for="minQuality3">3</label>
+                </div>
+            </div>
+        </div>
+
+        {{!-- Quantity Rating Select --}}
+        <div class="form-group form-row">
+            <h5>Quantity: </h5>
+            <div class="form-group col-md-5 d-block">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minQuantityOptions" id="minQuantity1"
+                        value="option0" checked>
+                    <label class="form-check-label" for="minQuantity1">(none)</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minQuantityOptions" id="minQuantity1"
+                        value="option1">
+                    <label class="form-check-label" for="minQuantity1">1</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minQuantityOptions" id="minQuantity2"
+                        value="option2">
+                    <label class="form-check-label" for="minQuantity2">2</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minQuantityOptions" id="minQuantity3"
+                        value="option3">
+                    <label class="form-check-label" for="minQuantity3">3</label>
+                </div>
+            </div>
+        </div>
+
+        {{!-- Price Rating Select --}}
+        <div class="form-group form-row">
+            <h5>Price: </h5>
+            <div class="form-group col-md-5 d-block">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice1" value="option0"
+                        checked>
+                    <label class="form-check-label" for="minPrice1">(none)</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice1" value="option1">
+                    <label class="form-check-label" for="minPrice1">1</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice2" value="option2">
+                    <label class="form-check-label" for="minPrice2">2</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="minPriceOptions" id="minPrice3" value="option3">
+                    <label class="form-check-label" for="minPrice3">3</label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
     </div>
-    <div class="form-group">
-        <label for="exampleInputEmail1">Email address</label>
-        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-            placeholder="Enter email">
-        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-    </div>
-    <div class="form-group">
-        <label for="exampleInputPassword1">Password</label>
-        <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-    </div>
-    <div class="form-group form-check">
-        <input type="checkbox" class="form-check-input" id="exampleCheck1">
-        <label class="form-check-label" for="exampleCheck1">Check me out</label>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
 </form>
