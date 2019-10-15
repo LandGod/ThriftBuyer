@@ -73,6 +73,10 @@ module.exports = function (app) {
     //TODO: Data validation for ratings
     try { } catch (error) { res.status(400).json(error); return };
 
+    console.log('************DEBUG************')
+    console.log('variable request in api-routes.js:')
+    console.log(request)
+
     db.Store.findAll({
       include: [
         {
