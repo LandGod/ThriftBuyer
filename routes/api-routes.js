@@ -77,16 +77,16 @@ module.exports = function (app) {
       include: [
         {
           model: db.CategoryEntry,
-          
+
           // We're using `|| WILDCARD` to specify that if no value is provided, the search should return any value for that query
           // WILDCARD === {[Op.like]: "%"}
           where: {
             // If a type is specified, we require any category to include that value for type in order to be a match
             type: request.type || WILDCARD,
             // If a minimum rating is supplied, we'll for that to, or just say minimum rating of 0 or greater, since no rating can be lower
-            qualityAvg: { [Op.gte]: request.minimumQuality || 0},
-            quantityAvg: { [Op.gte]: request.minimumQuantity || 0},
-            priceAvg: { [Op.gte]: request.minimumPrice || 0}
+            qualityAvg: { [Op.gte]: request.minimumQuality || 0 },
+            quantityAvg: { [Op.gte]: request.minimumQuantity || 0 },
+            priceAvg: { [Op.gte]: request.minimumPrice || 0 }
           },
           include: [{
             model: db.Tag,
@@ -101,26 +101,26 @@ module.exports = function (app) {
       })
       .catch((error) => {
         console.log(error);
-        res.status(500).json({error: error.message, stack: error.stack});
+        res.status(500).json({ error: error.message, stack: error.stack });
       });
 
   });
 
   // Route for getting info for a particular store via its unique id
-  app.get("/api/stores", function (req, res) { 
+  app.get("/api/stores", function (req, res) {
     let storeId = req.body.storeId;
 
     db.Store.findOne({
-      where: {id: storeId}
+      where: { id: storeId }
     })
-    .then((response) => {
-      res.status(200).json(response)
-    })
-    .catch((error) => {
-      res.status(500).json({error: error})
-    })
+      .then((response) => {
+        res.status(200).json(response)
+      })
+      .catch((error) => {
+        res.status(500).json({ error: error })
+      })
 
-   });
+  });
 
   // Rote for adding a new store
   app.post("/api/stores", function (req, res) {
@@ -445,6 +445,25 @@ module.exports = function (app) {
         res.json({ errorInfo: `Async error during categoryEntry creation:\n${err}`, stack: err.stack });
         //TODO: Handle error (probably delete entire store) and inform user
       }))
+  });
+
+  // Route for getting a category(s) when you know the associated store id already
+  app.get("/api/category", function (req, res) {
+
+    db.CategoryEntry.findOne({
+      where: {
+        StoreId: req.query.storeId,
+        type: req.query.type
+      }
+    })
+      .then((response) => {
+        res.status(200).json(response)
+      })
+      .catch((error) => { 
+        console.log(error)
+        res.status(500).send(error)
+      })
+
   });
 
   // _________________________________________________________________________________________________ \\

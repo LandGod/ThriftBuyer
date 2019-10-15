@@ -25,14 +25,19 @@ module.exports = function (app) {
           let categories = [];
           let possibleCategories = ['Fashion', 'Furniture', 'HomeGoods', 'Misc'];
           for (let i = 0; i < possibleCategories.length; i++) {
-            if (dbData[`has${possibleCategories[i]}`]) { categories.push(possibleCategories[i]) }
+            if (dbData[`has${possibleCategories[i]}`]) { 
+              let currentPossibleCategory = possibleCategories[i];
+              if (currentPossibleCategory === 'HomeGoods') {currentPossibleCategory = 'Home Goods'}
+              categories.push(currentPossibleCategory);
+            }
           }
 
           res.render("store", {
+            id: dbData.id,
             name: dbData.name,
             address: dbData.address,
             categories: categories,
-            pageSpecificJs: '/public/js/store.js',
+            pageSpecificJs: '/js/store.js',
             pageTitle: `ThriftShopper - ${dbData.name}`
           })
         } else {

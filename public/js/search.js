@@ -36,12 +36,12 @@ $('#searchSubmit').click((event) => {
     // Query DB with user info
     $.ajax({
         dataType: "json",
-        url: '/api/search',
+        url: '/api/category',
         data: searchData
     })
         .done(displaySearchResults)  // Definied later
 
-        .fail(function (error) {
+        .fail(function (err) {
             console.log('querie failed');
             console.log(err);
         })

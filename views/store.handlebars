@@ -1,11 +1,65 @@
-<h1>{{name}}</h1>
+<div class="container">
 
-<h3>Located at</h3>
-<p>{{address}}</p>
+    {{!-- Store Name Row --}}
+    <div class="row">
+        <div class="col-12">
+            <h1>{{name}}</h1>
+        </div>
+    </div>
+    {{!-- /Store Name Row --}}
 
-<h3>Available Categories:</h3>
-<ul>
-    {{#each categories}}
-    <li>{{this}}</li>
-    {{/each}}
-</ul>
+    {{!-- Address Row --}}
+    <div class="row">
+        <div class="col-12 col-md-6">
+
+            <h3>Located at</h3>
+            <p>{{address}}</p>
+        </div>
+    </div>
+    {{!-- /Address Row --}}
+
+    {{!-- Category Row --}}
+    <div class="row">
+        <div class="col-12">
+
+            {{!-- Category Buttons --}}
+            <div class="row">
+                <div class="col-12">
+                    <ul>
+                        {{#each categories}}
+                        <li class="d-inline-block"><button class="btn categoryTitleButton {{this}}Button">{{this}}</button></li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+            {{!-- /Category Buttons --}}
+
+            {{!-- All Category Data --}}
+            <div class="row">
+
+                {{!-- Ratings --}}
+                <div class="col-12 col-md-6" id="ratingsColumn">
+
+                    {{!-- This will be inserted via the page's javascript --}}
+
+                </div>
+                {{!-- /Ratings --}}
+
+                {{!-- Personal Notes --}}
+                <div class="col-12 col-md-6" id="personalNotesColumn">
+
+                    {{!-- This will also be inserted via page's javascript --}}
+
+                </div>
+                {{!-- /Personal Notes --}}
+
+            </div>
+            {{!-- /All Category Data --}}
+
+        </div>
+    </div>
+    {{!-- /Category Row --}}
+
+</div>
+
+<div id="storeInfo" storeId="{{id}}" hidden ></div>
