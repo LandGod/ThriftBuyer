@@ -73,7 +73,7 @@ function displaySearchResults(results) {
         // Add in our data
         newCol1.append(`
         <h5><a href="/stores/${results[i].id}">${results[i].name}</a></h5> 
-        <h6><a class="addressLink" href="https://www.google.com/maps/place/${results[i].address.split(' ').join('+')}">${results[i].address}</a></h6> 
+        <h6><a class="addressLink" target="_blank" href="https://www.google.com/maps/place/${results[i].address.split(' ').join('+')}">${results[i].address}</a></h6> 
         `)
 
         // Append applicable categories to newCol1
