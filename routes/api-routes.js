@@ -100,8 +100,9 @@ module.exports = function (app) {
         res.status(200).json(response);
       })
       .catch((error) => {
+        console.log('**********ERROR**********');
         console.log(error);
-        res.status(500).json({ error: error.message, stack: error.stack });
+        res.status(500).send(error);
       });
 
   });
