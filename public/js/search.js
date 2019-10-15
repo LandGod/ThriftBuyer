@@ -36,7 +36,7 @@ $('#searchSubmit').click((event) => {
     // Query DB with user info
     $.ajax({
         dataType: "json",
-        url: '/api/category',
+        url: '/api/search',
         data: searchData
     })
         .done(displaySearchResults)  // Definied later

@@ -30,9 +30,8 @@ module.exports = function (app) {
         res.redirect(307, "/api/login");
       })
       .catch(function (err) {
-        console.log('caught login error');
-        console.log(err);
-        res.status(401).json(err);
+        logStatus({ thisRoute: "/api/signup", reqbody: req.body }, err)
+        res.status(401).send(err);
       });
   });
 
@@ -65,17 +64,13 @@ module.exports = function (app) {
     // Category=any, Tag=None, address=none, nearAddress=noLimit, minimumRating=none
 
     //TODO: Data validation for categories
-    try { } catch (error) { res.status(400).json(error); return };
+    try { } catch (error) { res.status(400).send(error); return };
 
     //TODO: Data validation for address
-    try { } catch (error) { res.status(400).json(error); return };
+    try { } catch (error) { res.status(400).send(error); return };
 
     //TODO: Data validation for ratings
-    try { } catch (error) { res.status(400).json(error); return };
-
-    console.log('************DEBUG************')
-    console.log('variable request in api-routes.js:')
-    console.log(request)
+    try { } catch (error) { res.status(400).send(error); return };
 
     db.Store.findAll({
       include: [
@@ -104,8 +99,7 @@ module.exports = function (app) {
         res.status(200).json(response);
       })
       .catch((error) => {
-        console.log('**********ERROR**********');
-        console.log(error);
+        logStatus({ route: "GET: api/search", operation: "db.Store.findAll()" }, error)
         res.status(500).send(error);
       });
 
@@ -113,6 +107,7 @@ module.exports = function (app) {
 
   // Route for getting info for a particular store via its unique id
   app.get("/api/stores", function (req, res) {
+
     let storeId = req.body.storeId;
 
     db.Store.findOne({
@@ -122,7 +117,8 @@ module.exports = function (app) {
         res.status(200).json(response)
       })
       .catch((error) => {
-        res.status(500).json({ error: error })
+        logStatus({ route: "GET: api/stores", reqBody: req.body }, error)
+        res.status(500).send(error)
       })
 
   });
@@ -182,14 +178,16 @@ module.exports = function (app) {
         })
           // Report any errors to the console
           .catch((err => {
-            res.json({ errorInfo: `Async error during categoryEntry creation:\n${err}`, stack: err.stack });
+            logStatus({ route: "POST: api/stores", operation: "Promise.all on multiple category creates" }, err)
+            res.send(err);
             //TODO: Handle error (probably delete entire store) and inform user
           }))
 
 
       })
       .catch((err) => {
-        res.json(`Async error during store creation:\n${err}`);
+        logStatus({ route: "POST: api/stores", operation: "db.Store.create()" }, err)
+        res.send(err);
         //TODO: Handle error and inform user
       })
   })
@@ -197,9 +195,6 @@ module.exports = function (app) {
   // Route for adding a rating and/or note to an existing store for the first time
   // if any of this information already exists for the user then a PUT shoudl be used instead
   app.post("/api/note", function (req, res) {
-
-    // console.log('DEBUG:\n-------------------');
-    // console.log(req.body);
 
     // Extract and parse data from request
     let categoryId = req.body.categoryId;
@@ -259,13 +254,15 @@ module.exports = function (app) {
                   res.status(200).json(responseB);
                 })
                 .catch((err) => {
-                  res.status(500).json(`Error: ${err}`);
+                  logStatus({ route: "POST: Api/note", operation: 'db.CategoryEntry.update()' }, err);
+                  res.status(500).send(err);
                   //TODO: Handle error and inform user
                 });
 
             })
             .catch((err) => {
-              res.status(500).json(`Error: ${err}`);
+              logStatus({ route: "POST: Api/note", operation: 'db.CategoryEntry.findAll()' }, err);
+              res.status(500).send(err);
               //TODO: Handle error and inform user
             });
         }
@@ -273,7 +270,8 @@ module.exports = function (app) {
       })
       // Catch from Note findOrCreate query
       .catch((err) => {
-        res.status(500).json(`Error: ${err}`);
+        logStatus({ route: "POST: Api/note", operation: 'db.Note.findOrCreate()' }, err);
+        res.status(500).send(err);
         //TODO: Handle error and inform user
       })
 
@@ -342,15 +340,17 @@ module.exports = function (app) {
           .then((response) => {
             res.status(200).json([response[0], response[1]])
           })
-          .catch((err) => { res.status(500).json(err) });
+          .catch((err) => { logStatus({ route: 'PUT: Api/note', operation: "Promise.all on db.Note.upadate() & db.CategoryEntry.update" }, err); res.status(500).send(err) });
 
       })
         .catch((err) => {
-          res.status(500).json(err);
+          logStatus({ route: 'PUT: Api/note', operation: "db.CategoryEntry.findAll()" }, err);
+          res.status(500).send(err);
         });
     })
       .catch((err) => {
-        res.status(500).json(err);
+        logStatus({ route: 'PUT: Api/note', operation: "db.Note.findAll()" }, err);
+        res.status(500).send(err);
       });
 
   });
@@ -370,7 +370,7 @@ module.exports = function (app) {
       assert(tagInfoPackage.UserId, 'Missing user ID of tag creator');
       assert(!isNaN(parseInt(tagInfoPackage.UserId)), 'Invalid user ID');
     } catch (err) {
-      console.log(err);
+      logStatus({ route: "POST: api/tag", operation: "Data Validation" }, err)
       res.status(400).send(err);
       return;
     }
@@ -386,8 +386,8 @@ module.exports = function (app) {
         res.status(200).json(response);
       })
       .catch((err) => {
-        console.log(err)
-        res.status(500).json(err);
+        logStatus({ route: "POST: api/tag", operation: "db.Tag.findOrCreate()" }, err);
+        res.status(500).send(err);
         return;
       })
 
@@ -447,13 +447,18 @@ module.exports = function (app) {
       })
       // Report any errors to the console
       .catch((err => {
-        res.json({ errorInfo: `Async error during categoryEntry creation:\n${err}`, stack: err.stack });
+        logStatus({ Route: 'POST: api/category', operation: "Promise.all(databaseQueries)" }, err);
+        res.send(err);
         //TODO: Handle error (probably delete entire store) and inform user
       }))
   });
 
   // Route for getting a category(s) when you know the associated store id already
   app.get("/api/category", function (req, res) {
+
+    // Input validation
+    try {assert(req.query.storeId, 'StoreId is undefined in req.query to GET: /api/category');} 
+    catch (error) {logStatus({Route: 'GET: api/category', reqQuery: req.query, reqQueryStoreId: req.query.storeId}, error)};
 
     db.CategoryEntry.findOne({
       where: {
@@ -464,8 +469,8 @@ module.exports = function (app) {
       .then((response) => {
         res.status(200).json(response)
       })
-      .catch((error) => { 
-        console.log(error)
+      .catch((error) => {
+        logStatus({ Route: 'GET: api/category', operation: "db.CategoryEntry.findOne()" }, error);
         res.status(500).send(error)
       })
 
@@ -542,14 +547,14 @@ module.exports = function (app) {
             res.json('Done')
           })
           .catch(function (err) {
-            console.log('caught login error');
-            console.log(err);
-            res.json(err);
+            logStatus({ Route: 'Seeds' }, err);
+            res.send(err);
           });
 
       })
       .catch((err => {
-        res.json({ errorInfo: `Async error during categoryEntry creation:\n${err}`, stack: err.stack });
+        logStatus({ Route: 'Seeds' }, err);
+        res.send(err);
         //TODO: Handle error (probably delete entire store) and inform user
       }))
 
@@ -639,7 +644,8 @@ class PsuedoError extends Error {
   }
 }
 
-var logStatus = (variablesToPrint) => {
+// For debugging. Prints the line from this document that it was called on, along with an object and optional error
+var logStatus = (variablesToPrint, error) => {
 
   console.log('\n----------------------------------\nDEBUG:\n----------------------------------');
 
@@ -684,6 +690,11 @@ var logStatus = (variablesToPrint) => {
     console.log(`\nValue for: ${printKeys[logi]}`);
     console.log(variablesToPrint[printKeys[logi]]);
 
+  }
+
+  if (error) {
+    console.log('The following error object was supplied:')
+    console.log(error);
   }
 
   console.log('----------------------------------\n');
