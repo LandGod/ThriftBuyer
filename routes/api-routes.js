@@ -37,8 +37,12 @@ module.exports = function (app) {
 
   // Route for logging user out
   app.get("/logout", function (req, res) {
+
+    let backURL = req.header('Referer') || '/';
+    if ((backURL.indexOf('localhost') === -1 && (backURL.indexOf('tranquil-temple-50803.herokuapp.com/') === -1))) { backURL = '/' };
+
     req.logout();
-    res.redirect("/");
+    res.redirect(backURL);
   });
 
   // Route for getting some data about our user to be used client side

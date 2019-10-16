@@ -99,4 +99,4 @@ module.exports = function (app) {
 
 // HTML for rendering the login/logout button as whichever is appropriate
 let loginButton = `<a class="nav-link float-right" href="/login">Login</a>`;
-let logoutButton = `<a class="nav-link float-right" href="#">Logout</a>`;
+let logoutButton = `<a class="nav-link float-right" href="/logout">Logout</a>`;
