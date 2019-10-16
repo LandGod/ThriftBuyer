@@ -371,9 +371,9 @@ module.exports = function (app) {
     let userId = req.user.id;
 
     // Then extract the categoryId and check to make sure its valid
-    let categoryId = req.body.categoryId;
+    let categoryId = req.query.categoryId;
     try { assert(categoryId, 'No category id identifier provided.') }
-    catch (err) { if (err instanceof assert.AssertionError) { res.status(400).end(); return } else { throw (err) } };
+    catch (err) { if (err instanceof assert.AssertionError) { res.status(400).send('No category Id was provided'); return } else { logStatus({ route: 'PUT: api/note' }, err) } };
 
     // Then make the db request
     db.Note.findOne({
@@ -382,18 +382,18 @@ module.exports = function (app) {
         CategoryEntryId: categoryId
       }
     })
-    .then((results) => {
-      //TODO: Send actual results.
-      // Eventually we'll send results to the user, but for testing purposes, we're just going to send a 404
-      // Which is what SHOULD be sent if the user simply has no note data for the specified category
-      console.log(results)
-      res.status(404).end();
+      .then((results) => {
+        //TODO: Send actual results.
+        // Eventually we'll send results to the user, but for testing purposes, we're just going to send a 404
+        // Which is what SHOULD be sent if the user simply has no note data for the specified category
+        if (results === null) {res.status(404).end(); return}
+        else {console.log('DEBUG: Got results:'); console.log(results)}
 
-    })
-    .catch((err) => {
-      logStatus({route: "GET: api/note"},err)
-      res.status(500).send(err);
-    });
+      })
+      .catch((err) => {
+        logStatus({ route: "GET: api/note" }, err)
+        res.status(500).send(err);
+      });
 
   });
 

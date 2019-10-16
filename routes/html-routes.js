@@ -98,5 +98,5 @@ module.exports = function (app) {
 // res.sendFile(path.join(__dirname, "../public/signup.html"));
 
 // HTML for rendering the login/logout button as whichever is appropriate
-let loginButton = `<a class="nav-link float-right" href="/login">Login</a>`;
-let logoutButton = `<a class="nav-link float-right" href="/logout">Logout</a>`;
+let loginButton = `<a class="nav-link" href="/login">Login</a>`;
+let logoutButton = `<a class="nav-link" href="/logout">Logout</a>`;

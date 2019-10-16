@@ -94,6 +94,9 @@ function renderCategory(index) {
 
                 ratingsArea.append(categoryRow);
             }
+
+            // After constructing the global elements of the category, we'll update  the user notes section if possible
+            renderNote();
         })
 
         .fail(function (err) {
@@ -105,7 +108,44 @@ function renderCategory(index) {
 // Definte function for rendering peronal ratings and text note for this specific user for this specific category
 function renderNote() {
 
+    console.log(`Sending categoryId: ${currentCategoryId}`);
+
     // We'll start by checking the database to see if the user has any data to render
+    $.ajax({
+        dataType: "json",
+        url: '/api/note',
+        data: {
+            categoryId: currentCategoryId
+        }
+    })
+        .done((results) => {
+
+            console.log('Got results for user note but rendering is not yet implemented')
+            console.log(results)
+
+        })
+
+        .fail(function (err) {
+
+            // If we recieve an error, we first want to check if its one of two expected errors
+            // 401 simply means the user isn't logged in and 404 means they are but just don't have any saved info.
+            // Neither of these are actually an error, per se, but nontheless should be dealt with
+
+            if (err.status === 401) {
+                $('#NoteTextArea').text('You must be logged in to rate or take notes on this store.');
+                $('#NoteTextArea').attr('readonly', true);
+                $('.personalRatingButton').attr('disabled', true);
+            }
+            else if (err.status === 404) {
+                console.log(404)
+                $('#saveButton').removeAttr('disabled');
+            }
+            else {
+                console.log('Something went wrong.')
+                console.log(err)
+            }
+
+        });
 
 };
 
