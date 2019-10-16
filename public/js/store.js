@@ -30,6 +30,14 @@
         renderCategory(ind);
     })
 
+    // Attach click event for each personal rating button
+    $('body').on('click', '.personalRatingButton', function () {
+        let button = $(this);
+
+        
+
+    });
+
 // })
 
 // Define function for rendering all information about one category onto a store page
@@ -84,6 +92,9 @@ function renderCategory(index) {
             console.log(err);
         })
 };
+
+// Definte function for rendering peronal ratings and text note for this specific user for this specific category
+function renderNote() {};
 
 // Calls toUpperCase only on the first letter of each word in the string, then returns the whole thing
 function capitalize(string) {

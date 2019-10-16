@@ -198,20 +198,15 @@ module.exports = function (app) {
 
     // Extract and parse data from request
     let categoryId = req.body.categoryId;
-    let userId = req.body.userId;
+    let userId = req.user.id;
 
-    // Check that data is valid. If not, return 'bad request' status code and halt further operations
-    try {
-      assert(userId, 'No user ID provided.');
-      assert(categoryId, 'No store category identifier provided.');
-    } catch (err) {
-      if (err instanceof assert.AssertionError) {
-        res.status(400).end();
-        return;
-      } else {
-        throw (err);
-      }
-    }
+    // Check that data is valid. If not, return 'bad request' or 'unauthorized' status code and halt further operations
+    try { assert(userId, 'Not logged in') }
+    catch (err) { if (err instanceof assert.AssertionError) { res.status(401).end(); return } else { throw (err) } };
+
+    try { assert(categoryId, 'No store category identifier provided.') }
+    catch (err) { if (err instanceof assert.AssertionError) { res.status(400).end(); return } else { throw (err) } };
+
 
     // Build data package, making sure that unsuplied values are set to null since we don't want undefined going into the db
     let quality = req.body.quality || null;
@@ -280,10 +275,15 @@ module.exports = function (app) {
   // Route for updating a personal rating and/or note
   app.put("/api/note", function (req, res) {
 
-    // Extract and parse data from request
-    let noteId = req.body.noteId;
+    // Make sure user is logged in, if not, reject request with 401 unauthorized
+    try { assert(req.user, 'Not logged in') }
+    catch (err) { if (err instanceof assert.AssertionError) { res.status(401).end(); return } else { logStatus({ route: 'PUT: api/note' }, err) } };
 
-    assert(noteId, 'No note ID key provided.');
+    // Extract and parse data from request
+    let categoryId = req.body.categoryId;
+
+    try { assert(categoryId, 'No category id identifier provided.') }
+    catch (err) { if (err instanceof assert.AssertionError) { res.status(400).end(); return } else { throw (err) } };
 
     let preUpdateKey = ['quality', 'quantity', 'price', 'textNote'];
 
@@ -313,7 +313,10 @@ module.exports = function (app) {
     // First we grab the data
     let oldData;
     db.Note.findAll({
-      where: { id: noteId },
+      where: { 
+        UserId: req.user.id,
+        CategoryId: categoryId
+       },
       // include: [db.CategoryEntry]    // TODO: Reforfactor this and below to use include instead of doing two seperate queries 
     }).then((response1) => {
       oldData = response1[0].dataValues;
@@ -457,8 +460,8 @@ module.exports = function (app) {
   app.get("/api/category", function (req, res) {
 
     // Input validation
-    try {assert(req.query.storeId, 'StoreId is undefined in req.query to GET: /api/category');} 
-    catch (error) {logStatus({Route: 'GET: api/category', reqQuery: req.query, reqQueryStoreId: req.query.storeId}, error)};
+    try { assert(req.query.storeId, 'StoreId is undefined in req.query to GET: /api/category'); }
+    catch (error) { logStatus({ Route: 'GET: api/category', reqQuery: req.query, reqQueryStoreId: req.query.storeId }, error) };
 
     db.CategoryEntry.findOne({
       where: {

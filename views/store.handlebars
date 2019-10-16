@@ -27,7 +27,8 @@
                 <div class="col-12">
                     <ul>
                         {{#each categories}}
-                        <li class="d-inline-block"><button class="btn categoryTitleButton {{this}}Button">{{this}}</button></li>
+                        <li class="d-inline-block"><button
+                                class="btn categoryTitleButton {{this}}Button">{{this}}</button></li>
                         {{/each}}
                     </ul>
                 </div>
@@ -38,7 +39,7 @@
             <div class="row">
 
                 {{!-- Ratings --}}
-                <div class="col-12 col-md-6" id="ratingsColumn">
+                <div class="col-12 col-md-3" id="ratingsColumn">
 
                     {{!-- This will be inserted via the page's javascript --}}
 
@@ -46,9 +47,58 @@
                 {{!-- /Ratings --}}
 
                 {{!-- Personal Notes --}}
-                <div class="col-12 col-md-6" id="personalNotesColumn">
 
-                    {{!-- This will also be inserted via page's javascript --}}
+                <div class="col-12 col-md-9  border border-secondary" id="personalNotesColumn">
+                    <div class="row" id="NotesTitle">
+                        <h4>My Notes</h4>
+                    </div>
+                    <div class="row" id="personalRatingsRow">
+                        {{!-- <div class="col-md-2 col-12" id="myRatingsTitle">
+                            <h5>My Ratings:</h5>
+                        </div> --}}
+                        <div class="col-xl-4 col-md-6 col-12 personalRating" id="personalQualityRating">
+                            <h6>Quality:
+                                <button class="personalRatingButton btn" ratingType="quality"
+                                    id="qualityRateX">x</button>
+                                <button class="personalRatingButton btn btn-light" ratingType="quality"
+                                    id="qualityRate1">1</button>
+                                <button class="personalRatingButton btn btn-light" ratingType="quality"
+                                    id="qualityRate2">2</button>
+                                <button class="personalRatingButton btn btn-light" ratingType="quality"
+                                    id="qualityRate3">3</button></h6>
+                        </div>
+                        <div class="col-xl-4 col-md-6 col-12 personalRating" id="personalQuantityRating">
+                            <h6>Quantity:
+                                <button class="personalRatingButton btn" ratingType="quantity"
+                                    id="quantityRateX">x</button>
+                                <button class="personalRatingButton btn btn-light" ratingType="quantity"
+                                    id="quantityRate1">1</button>
+                                <button class="personalRatingButton btn btn-light" ratingType="quantity"
+                                    id="quantityRate2">2</button>
+                                <button class="personalRatingButton btn btn-light" ratingType="quantity"
+                                    id="quantityRate3">3</button></h6>
+                        </div>
+                        <div class="col-xl-4 col-md-6 col-12 personalRating" id="personalPriceRating">
+                            <h6>Price:
+                                <button class="personalRatingButton btn" ratingType="price" id="priceRateX">x</button>
+                                <button class="personalRatingButton btn btn-light" ratingType="price"
+                                    id="priceRate1">1</button>
+                                <button class="personalRatingButton btn btn-light" ratingType="price"
+                                    id="priceRate2">2</button>
+                                <button class="personalRatingButton btn btn-light" ratingType="price"
+                                    id="priceRate3">3</button></h6>
+                        </div>
+                    </div>
+                    <div class="row pt-3" id="NoteTextArea">
+                        <div class="form-group col-12">
+                            <textarea class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea>
+                        </div>
+                    </div>
+                    <div class="row justify-content-right">
+                        <div class="col-3">
+                            <button class="btn btn-success mb-3">Save</button>
+                        </div>
+                    </div>
 
                 </div>
                 {{!-- /Personal Notes --}}
@@ -62,4 +112,4 @@
 
 </div>
 
-<div id="storeInfo" storeId="{{id}}" hidden ></div>
+<div id="storeInfo" storeId="{{id}}" hidden></div>

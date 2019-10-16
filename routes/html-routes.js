@@ -8,13 +8,24 @@ var isAuthenticated = require("../config/middleware/isAuthenticated");
 module.exports = function (app) {
 
   app.get("/", function (req, res) {
+
+    console.log('DEBUG: USER INFO:')
+    console.log(req.user)
+
+    if (req.user) { logInOut = logoutButton }
+    else { logInOut = loginButton };
+
     res.render("search", {
       pageTitle: 'Search Stores | ThriftBuyer',
-      pageSpecificJs: '/js/search.js'
+      pageSpecificJs: '/js/search.js',
+      loginLogout: logInOut
     });
   });
 
   app.get("/stores/:id", function (req, res) {
+
+    if (req.user) { logInOut = logoutButton }
+    else { logInOut = loginButton };
 
     db.Store.findOne({
       where: { id: req.params.id }
@@ -25,9 +36,9 @@ module.exports = function (app) {
           let categories = [];
           let possibleCategories = ['Fashion', 'Furniture', 'HomeGoods', 'Misc'];
           for (let i = 0; i < possibleCategories.length; i++) {
-            if (dbData[`has${possibleCategories[i]}`]) { 
+            if (dbData[`has${possibleCategories[i]}`]) {
               let currentPossibleCategory = possibleCategories[i];
-              if (currentPossibleCategory === 'HomeGoods') {currentPossibleCategory = 'Home Goods'}
+              if (currentPossibleCategory === 'HomeGoods') { currentPossibleCategory = 'Home Goods' }
               categories.push(currentPossibleCategory);
             }
           }
@@ -38,11 +49,12 @@ module.exports = function (app) {
             address: dbData.address,
             categories: categories,
             pageSpecificJs: '/js/store.js',
-            pageTitle: `ThriftShopper - ${dbData.name}`
+            pageTitle: `ThriftShopper - ${dbData.name}`,
+            loginLogout: logInOut
           })
         } else {
           // If the server return no data, give the user a page stub informing them that no such store exists
-          res.render("store404", {id: req.params.id})
+          res.render("store404", { id: req.params.id })
         }
       })
       .catch((error) => {
@@ -84,3 +96,7 @@ module.exports = function (app) {
 //   res.redirect("/members");
 // }
 // res.sendFile(path.join(__dirname, "../public/signup.html"));
+
+// HTML for rendering the login/logout button as whichever is appropriate
+let loginButton = `<a class="nav-link float-right" href="/login">Login</a>`;
+let logoutButton = `<a class="nav-link float-right" href="#">Logout</a>`;
