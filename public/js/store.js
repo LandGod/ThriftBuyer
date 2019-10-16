@@ -4,6 +4,12 @@
     const ratingsArea = $('#ratingsColumn');
     const personalNotesArea = $('#personalNotesColumn');
 
+    // We'll also grab some data that will be used througout 
+    const storeId = $('#storeInfo').attr('storeId');
+    const ratingTypes = ['quality', 'quantity', 'price'];
+    let currentCategoryId;  // Must be updated each time we display a new category
+    
+
     // Iterate through category buttons on page to build list of available categories
     const categoryList = [];
     $('.categoryTitleButton').each(function () {
@@ -68,13 +74,16 @@ function renderCategory(index) {
         dataType: "json",
         url: '/api/category',
         data: {
-            storeId: $('#storeInfo').attr('storeId'),
+            storeId: storeId,
             type: categoryList[index]
         }
     })
         .done((results) => {
-            let ratingTypes = ['quality', 'quantity', 'price'];
 
+            // First we update our global current category variable, since we'll need this info to work with user specific notes
+            currentCategoryId = results.id;
+
+            // Then construct the rating rows and output it to the DOM
             for (let i = 0; i < ratingTypes.length; i++) {
                 let categoryRow = $('<div class="row">');
                 let categoryCol = $('<div class="col-md-6 col-12">');
@@ -94,7 +103,11 @@ function renderCategory(index) {
 };
 
 // Definte function for rendering peronal ratings and text note for this specific user for this specific category
-function renderNote() {};
+function renderNote() {
+
+    // We'll start by checking the database to see if the user has any data to render
+
+};
 
 // Calls toUpperCase only on the first letter of each word in the string, then returns the whole thing
 function capitalize(string) {

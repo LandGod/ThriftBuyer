@@ -317,10 +317,10 @@ module.exports = function (app) {
     // First we grab the data
     let oldData;
     db.Note.findAll({
-      where: { 
+      where: {
         UserId: req.user.id,
         CategoryId: categoryId
-       },
+      },
       // include: [db.CategoryEntry]    // TODO: Reforfactor this and below to use include instead of doing two seperate queries 
     }).then((response1) => {
       oldData = response1[0].dataValues;
@@ -359,6 +359,41 @@ module.exports = function (app) {
         logStatus({ route: 'PUT: Api/note', operation: "db.Note.findAll()" }, err);
         res.status(500).send(err);
       });
+
+  });
+
+  // Route for retrieving existing personal rating/note data
+  app.get("/api/note", function (req, res) {
+
+    // Make sure user is logged in, if not, reject request with 401 unauthorized, otherwise, save the user id
+    try { assert(req.user, 'Not logged in') }
+    catch (err) { if (err instanceof assert.AssertionError) { res.status(401).end(); return } else { logStatus({ route: 'PUT: api/note' }, err) } };
+    let userId = req.user.id;
+
+    // Then extract the categoryId and check to make sure its valid
+    let categoryId = req.body.categoryId;
+    try { assert(categoryId, 'No category id identifier provided.') }
+    catch (err) { if (err instanceof assert.AssertionError) { res.status(400).end(); return } else { throw (err) } };
+
+    // Then make the db request
+    db.Note.findOne({
+      where: {
+        UserId: userId,
+        CategoryEntryId: categoryId
+      }
+    })
+    .then((results) => {
+      //TODO: Send actual results.
+      // Eventually we'll send results to the user, but for testing purposes, we're just going to send a 404
+      // Which is what SHOULD be sent if the user simply has no note data for the specified category
+      console.log(results)
+      res.status(404).end();
+
+    })
+    .catch((err) => {
+      logStatus({route: "GET: api/note"},err)
+      res.status(500).send(err);
+    });
 
   });
 
