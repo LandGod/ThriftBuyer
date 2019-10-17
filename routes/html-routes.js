@@ -108,12 +108,25 @@ module.exports = function (app) {
     // Figure out where the user came from so that we can send them back there after login (unless they came from external)
     let backURL = req.header('Referer') || '/';
     if ((backURL.indexOf('localhost') === -1 && (backURL.indexOf('tranquil-temple-50803.herokuapp.com/') === -1))) { backURL = '/' };
+    if (backURL.includes('signup')) {backURL = '/'} // Avoid wierd redirect loops
 
     // If the user already has an account, bounce them back to the page they were already one
     if (req.user) {
       res.redirect(backURL);
     } else {
       res.sendFile(path.join(__dirname, "../public/login.html"));
+    }
+  });
+
+  app.get("/signup", function (req, res) {
+    // Figure out where the user came from so that we can send them back there after login (unless they came from external)
+    let backURL = '/';
+
+    // If the user already has an account, bounce them back to the page they were already one
+    if (req.user) {
+      res.redirect(backURL);
+    } else {
+      res.sendFile(path.join(__dirname, "../public/signup.html"));
     }
   });
 
