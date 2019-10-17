@@ -9,6 +9,8 @@ module.exports = function (app) {
   const Op = db.Sequelize.Op;
   // Define my best attempt to make a Sequelize wildcard
   const WILDCARD = { [Op.like]: "%" }
+  
+  const PossibleCategories = ['fashion', 'furniture', 'home goods', 'misc'];
 
   // Using the passport.authenticate middleware with our local strategy.
   // If the user has valid login credentials, send them to the members page.
@@ -135,11 +137,19 @@ module.exports = function (app) {
 
     let storeName = req.body.name;
     let address = req.body.address;
-    let categoryList = req.body.categories;
-    let fashion = Boolean(categoryList.includes('fashion'));
-    let furniture = Boolean(categoryList.includes('furniture'));
-    let homeGoods = Boolean(categoryList.includes('home goods'));
-    let misc = Boolean(categoryList.includes('misc'));
+    let fashion = req.body.fashion
+    let furniture = req.body.furniture
+    let homeGoods = req.body.homeGoods
+    let misc = req.body.misc
+
+    let categoryList = [];
+    for (let i = 0; i < PossibleCategories.length; i++) {
+      if (req.body[PossibleCategories[i]]) {
+        categoryList.push(PossibleCategories[i]);
+      }
+    }
+
+    if (req.body.homeGoods) {categoryList.push('home goods')}
 
     // Check that a store with similar name & address does not already exist
     //TODO: Clientside address validation using Smart Streets OR JUST USE GOOGLE'S AUTOCOMPLETE API

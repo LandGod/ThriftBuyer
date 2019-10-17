@@ -9,15 +9,24 @@ module.exports = function (app) {
 
   app.get("/", function (req, res) {
 
-    console.log('DEBUG: USER INFO:')
-    console.log(req.user)
-
     if (req.user) { logInOut = logoutButton }
     else { logInOut = loginButton };
 
     res.render("search", {
       pageTitle: 'Search Stores | ThriftBuyer',
       pageSpecificJs: '/js/search.js',
+      loginLogout: logInOut
+    });
+  });
+
+  app.get("/addstore", function (req, res) {
+
+    if (req.user) { logInOut = logoutButton }
+    else { logInOut = loginButton };
+
+    res.render("addstore", {
+      pageTitle: 'Add Store | ThriftBuyer',
+      pageSpecificJs: '/js/addstore.js',
       loginLogout: logInOut
     });
   });
