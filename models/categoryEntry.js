@@ -35,8 +35,15 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.FLOAT,
             defaultValue: 0
         }
+    },
+        {
+            uniqueKeys: {
+                CategoryEntry_unique: {
+                    fields: ['StoreId', 'type']
+                }
+            }
 
-    });
+        });
 
     CategoryEntry.associate = models => {
 

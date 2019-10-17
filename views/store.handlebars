@@ -1,3 +1,26 @@
+{{!-- User Note Saved Successfully Popup (modal) --}}
+<!-- Modal -->
+<div class="modal fade" id="saveSuccessModal" tabindex="-1" role="dialog" aria-labelledby="saveSuccess"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveSuccessModalTitle">Success!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Your note has been saved. Only you will be able to read this note.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Okay</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{!-- Main page content --}}
 <div class="container">
 
     {{!-- Store Name Row --}}
@@ -56,7 +79,8 @@
                         {{!-- <div class="col-md-2 col-12" id="myRatingsTitle">
                             <h5>My Ratings:</h5>
                         </div> --}}
-                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 col-12 personalRating" id="personalQualityRating">
+                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 col-12 personalRating"
+                            id="personalQualityRating">
                             <h6>Quality:
                                 <button class="personalRatingButton btn btn-sm" ratingType="quality"
                                     id="qualityRateX">x</button>
@@ -67,7 +91,8 @@
                                 <button class="personalRatingButton btn btn-sm btn-light" ratingType="quality"
                                     id="qualityRate3">3</button></h6>
                         </div>
-                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 col-12 personalRating" id="personalQuantityRating">
+                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 col-12 personalRating"
+                            id="personalQuantityRating">
                             <h6>Quantity:
                                 <button class="personalRatingButton btn btn-sm" ratingType="quantity"
                                     id="quantityRateX">x</button>
@@ -80,7 +105,8 @@
                         </div>
                         <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 col-12 personalRating" id="personalPriceRating">
                             <h6>Price:
-                                <button class="personalRatingButton btn btn-sm" ratingType="price" id="priceRateX">x</button>
+                                <button class="personalRatingButton btn btn-sm" ratingType="price"
+                                    id="priceRateX">x</button>
                                 <button class="personalRatingButton btn btn-sm btn-light" ratingType="price"
                                     id="priceRate1">1</button>
                                 <button class="personalRatingButton btn btn-sm btn-light" ratingType="price"

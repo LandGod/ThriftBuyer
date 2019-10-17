@@ -196,98 +196,18 @@ module.exports = function (app) {
       })
   })
 
-  // Route for adding a rating and/or note to an existing store for the first time
-  // if any of this information already exists for the user then a PUT shoudl be used instead
-  app.post("/api/note", function (req, res) {
-
-    // Extract and parse data from request
-    let categoryId = req.body.categoryId;
-    let userId = req.user.id;
-
-    // Check that data is valid. If not, return 'bad request' or 'unauthorized' status code and halt further operations
-    try { assert(userId, 'Not logged in') }
-    catch (err) { if (err instanceof assert.AssertionError) { res.status(401).end(); return } else { throw (err) } };
-
-    try { assert(categoryId, 'No store category identifier provided.') }
-    catch (err) { if (err instanceof assert.AssertionError) { res.status(400).end(); return } else { throw (err) } };
-
-
-    // Build data package, making sure that unsuplied values are set to null since we don't want undefined going into the db
-    let quality = req.body.quality || null;
-    let quantity = req.body.quantity || null;
-    let price = req.body.price || null;
-    let note = req.body.note || null;
-
-    let noteDataPackage = {
-      CategoryEntryId: categoryId,
-      UserId: userId,
-      quality: quality,
-      quantity: quantity,
-      price: price,
-      textNote: note
-    }
-
-    // Make sure matching entry does not alreayd exist. If not, proceed.
-    db.Note.findOrCreate({
-      where: {
-        UserId: userId,
-        CategoryEntryId: categoryId
-      },
-      defaults: noteDataPackage
-    })
-      .then(() => {
-        // After successfull creation of note, if any ratings have been added,
-        // grab data from the coresponding category in order to update ratings as neccessary
-        if ((quantity || quantity || price) !== null) {
-          let categoryData;
-          db.CategoryEntry.findAll({
-            where: { id: categoryId }
-          })
-            .then((responseA) => {
-              // Then use returned data to to construct an update package for the 
-              categoryData = responseA[0].dataValues;
-              let categoryUpdatePackage = createRatingsUpdatePackage(categoryData, noteDataPackage)
-              // And finally update the category with the ratings changes
-              db.CategoryEntry.update(categoryUpdatePackage, { where: { id: categoryData.id } })
-                .then((responseB) => {
-                  res.status(200).json(responseB);
-                })
-                .catch((err) => {
-                  logStatus({ route: "POST: Api/note", operation: 'db.CategoryEntry.update()' }, err);
-                  res.status(500).send(err);
-                  //TODO: Handle error and inform user
-                });
-
-            })
-            .catch((err) => {
-              logStatus({ route: "POST: Api/note", operation: 'db.CategoryEntry.findAll()' }, err);
-              res.status(500).send(err);
-              //TODO: Handle error and inform user
-            });
-        }
-
-      })
-      // Catch from Note findOrCreate query
-      .catch((err) => {
-        logStatus({ route: "POST: Api/note", operation: 'db.Note.findOrCreate()' }, err);
-        res.status(500).send(err);
-        //TODO: Handle error and inform user
-      })
-
-  });
-
   // Route for updating a personal rating and/or note
   app.put("/api/note", function (req, res) {
 
     // Make sure user is logged in, if not, reject request with 401 unauthorized
     try { assert(req.user, 'Not logged in') }
-    catch (err) { if (err instanceof assert.AssertionError) { res.status(401).end(); return } else { logStatus({ route: 'PUT: api/note' }, err) } };
+    catch (err) { if (err instanceof assert.AssertionError) { res.status(401).send('User not logged in'); return } else { logStatus({ route: 'PUT: api/note' }, err) } };
 
     // Extract and parse data from request
     let categoryId = req.body.categoryId;
 
     try { assert(categoryId, 'No category id identifier provided.') }
-    catch (err) { if (err instanceof assert.AssertionError) { res.status(400).end(); return } else { throw (err) } };
+    catch (err) { if (err instanceof assert.AssertionError) { res.status(400).send('No category id provided'); return } else { throw (err) } };
 
     let preUpdateKey = ['quality', 'quantity', 'price', 'textNote'];
 
@@ -303,6 +223,8 @@ module.exports = function (app) {
     // Then we'll just ignore that key
 
     let updatePackage = {};
+    updatePackage['UserId'] = req.user.id;
+    updatePackage['CategoryEntryId'] = categoryId;
     let ratingTypes = [];
 
     for (let i = 0; i < preUpdatePackage.length; i++) {
@@ -319,17 +241,20 @@ module.exports = function (app) {
     db.Note.findAll({
       where: {
         UserId: req.user.id,
-        CategoryId: categoryId
+        CategoryEntryId: categoryId
       },
       // include: [db.CategoryEntry]    // TODO: Reforfactor this and below to use include instead of doing two seperate queries 
     }).then((response1) => {
-      oldData = response1[0].dataValues;
+      try {oldData = response1[0].dataValues}
+      catch(error) {if(error instanceof TypeError) {
+        oldData = undefined;
+      }}
 
       // Once we have the current (soon to be old) values for the user note, we can use the Fkey from that to grab the categoryEntry data
       // from there we can do the math to update any global rating averages we need to
       let currentCategoryData;
       db.CategoryEntry.findAll({
-        where: { id: oldData.CategoryEntryId }
+        where: { id: categoryId }
       }).then((response2) => {
         currentCategoryData = response2[0].dataValues;
         let globalUpdatePackage = createRatingsUpdatePackage(currentCategoryData, updatePackage, oldData);
@@ -341,7 +266,7 @@ module.exports = function (app) {
         // Now that we have all of our new data ready to go, we'll send two updates to the database
         // we'll make both calls one after the other and then collect the resuls only when both succeed
         let dbUpdates = [];
-        dbUpdates.push(db.Note.update(updatePackage, { where: { id: noteId } }));
+        dbUpdates.push(db.Note.upsert(updatePackage));
         dbUpdates.push(db.CategoryEntry.update(globalUpdatePackage, { where: { id: currentCategoryData.id } }));
         Promise.all(dbUpdates)
           .then((response) => {
@@ -383,11 +308,10 @@ module.exports = function (app) {
       }
     })
       .then((results) => {
-        //TODO: Send actual results.
-        // Eventually we'll send results to the user, but for testing purposes, we're just going to send a 404
-        // Which is what SHOULD be sent if the user simply has no note data for the specified category
+
+        // No need to give the user any results, but we should give them a status 200 if the note was saved successfully
         if (results === null) {res.status(404).end(); return}
-        else {console.log('DEBUG: Got results:'); console.log(results)}
+        else {res.status(200).json(results)};
 
       })
       .catch((err) => {
@@ -742,3 +666,83 @@ var logStatus = (variablesToPrint, error) => {
   console.log('----------------------------------\n');
 
 };
+
+
+// Old POST route for user notes, deprecated due to use of 'upsert' 
+// app.post("/api/note", function (req, res) {
+
+//   // Extract and parse data from request
+//   let categoryId = req.body.categoryId;
+//   let userId = req.user.id;
+
+//   // Check that data is valid. If not, return 'bad request' or 'unauthorized' status code and halt further operations
+//   try { assert(userId, 'Not logged in') }
+//   catch (err) { if (err instanceof assert.AssertionError) { res.status(401).end(); return } else { throw (err) } };
+
+//   try { assert(categoryId, 'No store category identifier provided.') }
+//   catch (err) { if (err instanceof assert.AssertionError) { res.status(400).end(); return } else { throw (err) } };
+
+
+//   // Build data package, making sure that unsuplied values are set to null since we don't want undefined going into the db
+//   let quality = req.body.quality || null;
+//   let quantity = req.body.quantity || null;
+//   let price = req.body.price || null;
+//   let note = req.body.note || null;
+
+//   let noteDataPackage = {
+//     CategoryEntryId: categoryId,
+//     UserId: userId,
+//     quality: quality,
+//     quantity: quantity,
+//     price: price,
+//     textNote: note
+//   }
+
+//   // Make sure matching entry does not alreayd exist. If not, proceed.
+//   db.Note.findOrCreate({
+//     where: {
+//       UserId: userId,
+//       CategoryEntryId: categoryId
+//     },
+//     defaults: noteDataPackage
+//   })
+//     .then(() => {
+//       // After successfull creation of note, if any ratings have been added,
+//       // grab data from the coresponding category in order to update ratings as neccessary
+//       if ((quantity || quantity || price) !== null) {
+//         let categoryData;
+//         db.CategoryEntry.findAll({
+//           where: { id: categoryId }
+//         })
+//           .then((responseA) => {
+//             // Then use returned data to to construct an update package for the 
+//             categoryData = responseA[0].dataValues;
+//             let categoryUpdatePackage = createRatingsUpdatePackage(categoryData, noteDataPackage)
+//             // And finally update the category with the ratings changes
+//             db.CategoryEntry.update(categoryUpdatePackage, { where: { id: categoryData.id } })
+//               .then((responseB) => {
+//                 res.status(200).json(responseB);
+//               })
+//               .catch((err) => {
+//                 logStatus({ route: "POST: Api/note", operation: 'db.CategoryEntry.update()' }, err);
+//                 res.status(500).send(err);
+//                 //TODO: Handle error and inform user
+//               });
+
+//           })
+//           .catch((err) => {
+//             logStatus({ route: "POST: Api/note", operation: 'db.CategoryEntry.findAll()' }, err);
+//             res.status(500).send(err);
+//             //TODO: Handle error and inform user
+//           });
+//       }
+
+//     })
+//     // Catch from Note findOrCreate query
+//     .catch((err) => {
+//       logStatus({ route: "POST: Api/note", operation: 'db.Note.findOrCreate()' }, err);
+//       res.status(500).send(err);
+//       //TODO: Handle error and inform user
+//     })
+
+// });

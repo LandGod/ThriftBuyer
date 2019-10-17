@@ -13,8 +13,15 @@ module.exports = function (sequelize, DataTypes) {
         textNote: {
             type: DataTypes.TEXT
         }
+    },
+        {
+            uniqueKeys: {
+                Note_unique: {
+                    fields: ['UserId', 'CategoryEntryId']
+                }
+            }
 
-    });
+        });
 
     Note.associate = models => {
 
