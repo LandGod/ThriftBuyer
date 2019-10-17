@@ -50,7 +50,13 @@ module.exports = function (app) {
               if (currentPossibleCategory === 'HomeGoods') { currentPossibleCategory = 'Home Goods' }
               categories.push(currentPossibleCategory);
             }
+
           }
+
+          // After constructing our categories list, we'll use the length to determin if the 'add category' button should be displayed or hidden
+          // Because the hidden attribute either exists or doesn't we'll supply 'hidden' or simply '' if we want to show the element
+          let hidden = '';
+          if (categories.length === possibleCategories.length) { hidden = 'hidden' };
 
           res.render("store", {
             id: dbData.id,
@@ -59,6 +65,7 @@ module.exports = function (app) {
             categories: categories,
             pageSpecificJs: '/js/store.js',
             pageTitle: `ThriftShopper - ${dbData.name}`,
+            categoryAddShowHide: hidden,
             loginLogout: logInOut
           })
         } else {

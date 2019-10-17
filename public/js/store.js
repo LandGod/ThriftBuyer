@@ -172,7 +172,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
 
     };
 
-    // Calls toUpperCase only on the first letter of each word in the string, then returns the whole thing
+    // Calls toUpperCase only on the first letter of each word in the string, then returns the entire modified string
     function capitalize(string) {
 
         let words = string.split(' ');
