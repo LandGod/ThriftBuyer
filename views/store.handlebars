@@ -10,14 +10,15 @@
                 </button>
             </div>
             <div class="modal-body">
-                This action will permanently add the <span id="modalCategoryNameInsert">CATEGORYNAME</span> cateogry to
+                This action will permanently add the <strong><span
+                        id="modalCategoryNameInsert">CATEGORYNAME</span></strong> cateogry to
                 this store for all users.
                 Before you proceed, please be sure that this store is actually a place that someone would reasonably go
                 looking for an item from this category.
-                (For example, a store specializing in clothing that happens to have one or two overpriced chairs for
-                sale, should not have a furniture category.)
-                <br>
-                This action cannot be undone.
+                (For example, a store specializing in clothing that has couple chairs in thier display, which are
+                technically for sale, should not recieve a furniture category.)
+                <br><br>
+                <strong>This action cannot be undone.</strong>
             </div>
             <div class="modal-footer">
                 <button type="button" id="addCategoryConfirmCancel" class="btn btn-danger"
@@ -43,7 +44,7 @@
                 Your note has been saved. Only you will be able to read this note.
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Okay</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
             </div>
         </div>
     </div>
@@ -84,7 +85,11 @@
                                 class="btn categoryTitleButton {{this}}Button">{{this}}</button></li>
                         {{/each}}
                         <li class="d-inline-block">
-                            <button class="btn categoryTitleButton addCategoryButton" {{categoryAddShowHide}}>+</button>
+                            <button id="addCategoryButton" type="button" class="btn btn-secondary" data-container="body"
+                                data-toggle="popover" data-trigger="focus" data-placement="bottom"
+                                {{categoryAddShowHide}} {{addCatDisable}}>
+                                +
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -172,3 +177,13 @@
 </div>
 
 <div id="storeInfo" storeId="{{id}}" hidden></div>
+
+<div hidden>
+    <div id="categoriesToAdd">
+        {{#each categoriesToAdd}}
+        <div class="btn btn-sm btn-warning d-inline-block addCatButton" catName="{{this}}">
+            {{this}}
+        </div>
+        {{/each}}
+    </div>
+</div>

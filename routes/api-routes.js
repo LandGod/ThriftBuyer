@@ -9,7 +9,7 @@ module.exports = function (app) {
   const Op = db.Sequelize.Op;
   // Define my best attempt to make a Sequelize wildcard
   const WILDCARD = { [Op.like]: "%" }
-  
+
   const PossibleCategories = ['fashion', 'furniture', 'home goods', 'misc'];
 
   // Using the passport.authenticate middleware with our local strategy.
@@ -149,7 +149,7 @@ module.exports = function (app) {
       }
     }
 
-    if (req.body.homeGoods) {categoryList.push('home goods')}
+    if (req.body.homeGoods) { categoryList.push('home goods') }
 
     // Check that a store with similar name & address does not already exist
     //TODO: Clientside address validation using Smart Streets OR JUST USE GOOGLE'S AUTOCOMPLETE API
@@ -255,10 +255,12 @@ module.exports = function (app) {
       },
       // include: [db.CategoryEntry]    // TODO: Reforfactor this and below to use include instead of doing two seperate queries 
     }).then((response1) => {
-      try {oldData = response1[0].dataValues}
-      catch(error) {if(error instanceof TypeError) {
-        oldData = undefined;
-      }}
+      try { oldData = response1[0].dataValues }
+      catch (error) {
+        if (error instanceof TypeError) {
+          oldData = undefined;
+        }
+      }
 
       // Once we have the current (soon to be old) values for the user note, we can use the Fkey from that to grab the categoryEntry data
       // from there we can do the math to update any global rating averages we need to
@@ -320,8 +322,8 @@ module.exports = function (app) {
       .then((results) => {
 
         // No need to give the user any results, but we should give them a status 200 if the note was saved successfully
-        if (results === null) {res.status(404).end(); return}
-        else {res.status(200).json(results)};
+        if (results === null) { res.status(404).end(); return }
+        else { res.status(200).json(results) };
 
       })
       .catch((err) => {
@@ -379,6 +381,7 @@ module.exports = function (app) {
       assert(['fashion', 'furniture', 'home goods', 'misc'].includes(type));
     } catch (error) {
       res.status(400).send('Invalid store type');
+      return;
     };
 
     try {
@@ -389,7 +392,8 @@ module.exports = function (app) {
         return true;
       }, "Invalid Store ID")
     } catch (err) {
-      res.status(400).send('Invalid Store ID to add category')
+      res.status(400).send('Invalid Store ID to add category');
+      return;
     };
 
     // Create new categoryEntry table row, while making sure this isn't a duplicate, 
@@ -397,10 +401,11 @@ module.exports = function (app) {
     // We'll add both query Promises to a list so we can handle both results at the same time via Promise.all
     let databaseQueries = [];
     databaseQueries.push(
-      db.CategoryEntry.findOrCreate({
-        where: { StoreId: StoreId, type: type },
-        defaults: { StoreId: StoreId, type: type }
-      }))
+      db.CategoryEntry.create({
+        StoreId: StoreId,
+        type: type
+      })
+    )
 
     let storeUpdatePackage = {};
     // construct proper column name for store column specifying category as object key and set value to true

@@ -33,8 +33,17 @@ module.exports = function (app) {
 
   app.get("/stores/:id", function (req, res) {
 
-    if (req.user) { logInOut = logoutButton }
-    else { logInOut = loginButton };
+    // Will be used to add 'disabled' to add category button if user is not logged in
+    let addCatDisable;
+
+    if (req.user) { 
+      logInOut = logoutButton;
+      addCatDisable = '';
+    }
+    else { 
+      logInOut = loginButton;
+      addCatDisable = 'disabled';
+    };
 
     db.Store.findOne({
       where: { id: req.params.id }
@@ -43,12 +52,25 @@ module.exports = function (app) {
 
         if (dbData !== null) {
           let categories = [];
+          let addableCategories = ['Fashion', 'Furniture', 'HomeGoods', 'Misc'];
           let possibleCategories = ['Fashion', 'Furniture', 'HomeGoods', 'Misc'];
+
           for (let i = 0; i < possibleCategories.length; i++) {
+            // For each possible category, if it is listed as existing in the entry for the store:
             if (dbData[`has${possibleCategories[i]}`]) {
+
+              // Add it to categories
               let currentPossibleCategory = possibleCategories[i];
               if (currentPossibleCategory === 'HomeGoods') { currentPossibleCategory = 'Home Goods' }
               categories.push(currentPossibleCategory);
+              
+              // Remove it from addableCategories
+              possCat: for( let j = 0; j < addableCategories.length; j++){ 
+                if ( addableCategories[j] === possibleCategories[i]) {
+                  addableCategories.splice(j, 1); 
+                  break possCat;
+                }
+             }
             }
 
           }
@@ -58,6 +80,9 @@ module.exports = function (app) {
           let hidden = '';
           if (categories.length === possibleCategories.length) { hidden = 'hidden' };
 
+          console.log('*********DEBUG***********')
+          console.log(addableCategories);
+
           res.render("store", {
             id: dbData.id,
             name: dbData.name,
@@ -66,6 +91,8 @@ module.exports = function (app) {
             pageSpecificJs: '/js/store.js',
             pageTitle: `ThriftShopper - ${dbData.name}`,
             categoryAddShowHide: hidden,
+            categoriesToAdd: addableCategories,
+            addCatDisable: addCatDisable,
             loginLogout: logInOut
           })
         } else {

@@ -44,6 +44,9 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
 
     });
 
+    // Sends whatever text is in the user notes area to the server to update the user note entry
+    // If no user note entry exists, one is created with the supplied text
+    // Either way, the page is refreshed when a response is recieved from the server
     $('#saveButton').click(function (event) {
         event.preventDefault(); // Stop page from reloading
 
@@ -65,6 +68,74 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
             .fail((err) => {
                 console.log(err)
             })
+
+    });
+
+    // Generates a popover with a list of available categories to add
+    // Upon clicking one, a modal will apear asking the user if they are sure
+    // If the user clicks create, then the category entry is added to the database and the page refreshes. 
+    // If the user clicks cancel, nothing happens
+    $('#addCategoryButton').click(function (event) {
+
+        event.preventDefault();
+
+        $('#addCategoryButton').popover({
+            html: true,
+            content: function () {
+                return $('#categoriesToAdd').html();
+            }
+        });
+
+        $('#addCategoryButton').popover('show');
+
+        $('.addCatButton').click(function (event) {
+
+            // Add category name to modal text
+            let catName = $(this).text();
+            if (catName === 'HomeGoods') { catName = 'Home Goods' };
+            $('#modalCategoryNameInsert').text($(this).text())
+            $('#addCategoryConfirm').modal('show')
+
+            // Remove any existing click handler from the confirm button of the modal
+            $('#addCategoryConfirmConfirm').off();
+
+            // Build new dynamic event listener which makes the appropriate ajax call based on the desired category
+
+            $('#addCategoryConfirmConfirm').click((event) => {
+
+                console.log('*********DEBUG*********')
+                console.log($('#storeInfo').attr('storeId'))
+
+                let catType = $(this).text().toLowerCase().trim();
+                if (catType === 'homegoods') { catType = 'home goods' };
+
+                console.log('*********DEBUG*********')
+                console.log(catType)
+
+                $.ajax({
+                    dataType: "json",
+                    method: "POST",
+                    url: '/api/category',
+                    data: {
+                        StoreId: $('#storeInfo').attr('storeId'),
+                        type: catType
+                    }
+                })
+                    .done((results) => {
+                        location.reload();
+
+                    })
+
+                    .fail(function (err) {
+                        console.log('*******ERROR********')
+                        alert('Something went wrong');
+                        console.log(err)
+
+                    })
+
+            });
+
+        })
 
     });
 
