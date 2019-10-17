@@ -19,8 +19,12 @@ $('#newStoreSubmit').click(function(event) {
         url: '/api/stores',
         data: storeInfo
     })
-        .done(() => {
+        .done((info) => {
+            // On success, inform the user with a modal, then redirect them to the new store page as soon as the modal is dismissed
             $('#successModal').modal('show');
+            $('#successModal').on('hidden.bs.modal', function(){
+                location.replace(`stores/${info.newStoreId}`)
+            });
         })
         .fail((err) => {
             console.log('failed')

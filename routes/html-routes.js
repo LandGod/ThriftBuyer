@@ -22,7 +22,7 @@ module.exports = function (app) {
   app.get("/addstore", function (req, res) {
 
     if (req.user) { logInOut = logoutButton }
-    else { logInOut = loginButton };
+    else { res.redirect('/login'); return };
 
     res.render("addstore", {
       pageTitle: 'Add Store | ThriftBuyer',
@@ -79,9 +79,6 @@ module.exports = function (app) {
           // Because the hidden attribute either exists or doesn't we'll supply 'hidden' or simply '' if we want to show the element
           let hidden = '';
           if (categories.length === possibleCategories.length) { hidden = 'hidden' };
-
-          console.log('*********DEBUG***********')
-          console.log(addableCategories);
 
           res.render("store", {
             id: dbData.id,
