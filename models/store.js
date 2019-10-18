@@ -39,7 +39,43 @@ module.exports = function (sequelize, DataTypes) {
         Store.hasMany(models.CategoryEntry);
     };
 
+    // Hooks that automatically add applicable CategoryEntrys on store create
+    Store.addHook('afterCreate', (store) => {
 
+        if (store.hasFurniture) {
+            return sequelize.models.CategoryEntry.create({
+                StoreId: store.id,
+                type: 'furniture'
+            })
+        }
+    })
+
+    Store.addHook('afterCreate', (store) => {
+        if (store.hasFashion) {
+            return sequelize.models.CategoryEntry.create({
+                StoreId: store.id,
+                type: 'fashion'
+            })
+        }
+    })
+
+    Store.addHook('afterCreate', (store) => {
+        if (store.hasMisc) {
+            return sequelize.models.CategoryEntry.create({
+                StoreId: store.id,
+                type: 'misc'
+            })
+        }
+    })
+
+    Store.addHook('afterCreate', (store) => {
+        if (store.hasHomeGoods) {
+            return sequelize.models.CategoryEntry.create({
+                StoreId: store.id,
+                type: 'home goods'
+            })
+        }
+    })
 
     return Store;
 };

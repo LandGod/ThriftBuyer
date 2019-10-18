@@ -103,14 +103,8 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
 
             $('#addCategoryConfirmConfirm').click((event) => {
 
-                console.log('*********DEBUG*********')
-                console.log($('#storeInfo').attr('storeId'))
-
                 let catType = $(this).text().toLowerCase().trim();
                 if (catType === 'homegoods') { catType = 'home goods' };
-
-                console.log('*********DEBUG*********')
-                console.log(catType)
 
                 $.ajax({
                     dataType: "json",
@@ -172,7 +166,6 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
             }
         })
             .done((results) => {
-
                 // First we update our global current category variable, since we'll need this info to work with user specific notes
                 currentCategoryId = results.id;
 

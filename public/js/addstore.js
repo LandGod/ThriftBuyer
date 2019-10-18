@@ -1,17 +1,37 @@
 $('#newStoreSubmit').click(function(event) {
+    
+    // Make sure page doesn't reload itself
     event.preventDefault();
 
+    // Check that at least one category was selected
+    let checked = $("input[type=checkbox]:checked").length;
+
+      if(!checked) {
+        $('#noCategoryAlert').removeAttr('hidden');
+        return false;
+      }
+
+    // Gather info from DOM and store in an object which we can pass directly to our AJAX call
     let storeInfo = {};
+    let anyCategory = false;
     $('.categoryInput').each(function(){
 
         if($(this).prop("checked")) {
             
             storeInfo[$(this).val()] = true;
+            anyCategory = true;
         }
     })
 
     storeInfo['name'] = $("#storeName").val();
     storeInfo['address'] = $('#storeAddress').val();
+
+    // We're already doing form validation, but let's validate again for safety
+    if (!anyCategory) {
+        alert('Something went wrong!')
+        throw(new Error('No category was selected!'))
+        return;
+    }
 
     $.ajax({
         dataType: "json",

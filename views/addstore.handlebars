@@ -1,7 +1,6 @@
 {{!-- Modals --}}
 
-<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="success"
-    aria-hidden="true">
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="success" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -27,33 +26,43 @@
     </div>
     <div class="form-group form-row">
         <label class="h6" for="storeName">Store Name</label>
-        <input type="text" class="form-control" id="storeName" placeholder="Please use the actual name of the business">
+        <input type="text" class="form-control" id="storeName" placeholder="Please use the actual name of the business"
+            required>
     </div>
     <div class="form-group form-row">
         <label class="h6" for="storeAddress">Store Address</label>
         <input type="text" class="form-control" id="storeAddress"
-            placeholder="100 Example Ave, Suite B, Seattle, WA 90210">
+            placeholder="100 Example Ave, Suite B, Seattle, WA 90210" required>
     </div>
     <div class="form-row">
         <h6>Select all applicable categories:</h6>
     </div>
     <div class="form-group form-row">
         <div class="custom-control custom-checkbox custom-control-inline">
-            <input type="checkbox" id="fashionCategory" name="categorySelect" class="custom-control-input categoryInput" value="fashion">
+            <input type="checkbox" id="fashionCategory" name="categorySelect" class="custom-control-input categoryInput"
+                value="fashion">
             <label class="custom-control-label" for="fashionCategory">Fashion</label>
         </div>
         <div class="custom-control custom-checkbox custom-control-inline">
-            <input type="checkbox" id="furnitureCategory" name="categorySelect" class="custom-control-input categoryInput" value="furniture">
+            <input type="checkbox" id="furnitureCategory" name="categorySelect"
+                class="custom-control-input categoryInput" value="furniture">
             <label class="custom-control-label" for="furnitureCategory">Furniture</label>
         </div>
         <div class="custom-control custom-checkbox custom-control-inline">
-            <input type="checkbox" id="homeGoodsCategory" name="categorySelect" class="custom-control-input categoryInput" value="homeGoods">
+            <input type="checkbox" id="homeGoodsCategory" name="categorySelect"
+                class="custom-control-input categoryInput" value="homeGoods">
             <label class="custom-control-label" for="homeGoodsCategory">Home Goods</label>
         </div>
         <div class="custom-control custom-checkbox custom-control-inline">
-            <input type="checkbox" id="miscCategory" name="categorySelect" class="custom-control-input categoryInput" value="misc">
+            <input type="checkbox" id="miscCategory" name="categorySelect" class="custom-control-input categoryInput"
+                value="misc">
             <label class="custom-control-label" for="miscCategory">Miscellaneous</label>
-        </div>      
+        </div>
+    </div>
+    <div id="noCategoryAlert" class="form-row" hidden>
+        <div class="alert alert-danger" role="alert">
+            You must select at least one category to create a store with.
+        </div>
     </div>
     <div class="form-row">
         <button type="submit" class="btn btn-primary" id='newStoreSubmit'>Create</button>

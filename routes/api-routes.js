@@ -151,6 +151,9 @@ module.exports = function (app) {
 
     if (req.body.homeGoods) { categoryList.push('home goods') }
 
+    // Make sure we got at least one category
+    if (categoryList.length = 0) { res.status(400).send('Must select at least one category') };
+
     // Check that a store with similar name & address does not already exist
     //TODO: Clientside address validation using Smart Streets OR JUST USE GOOGLE'S AUTOCOMPLETE API
     //TODO: Google maps based comparison via address 
@@ -168,40 +171,46 @@ module.exports = function (app) {
 
         // Grab new store ID from response & validate
         let newStoreID = response.dataValues.id;
-        assert((newStoreID) => {
-          try { newStoreID = parseInt(newStoreID) } catch (err) { return false };
-          if (isNaN(newStoreID)) { return false };
-          if (newStoreID < 1) { return false };
-          return true;
-        }, "Failed to retrieve proper store ID from database")
-
-
-        // Create as many entries in the categoryEntry table as needed 
-        let promiseList = [];
-        for (let i = 0; i < categoryList.length; i++) {
-          let dbPromise = db.CategoryEntry.create({
-            StoreId: newStoreID,
-            type: categoryList[i]
-          })
-          promiseList.push(dbPromise);
+        try {
+          assert((newStoreID) => {
+            try { newStoreID = parseInt(newStoreID) } catch (err) { return false };
+            if (isNaN(newStoreID)) { return false };
+            if (newStoreID < 1) { return false };
+            return true;
+          }, "Failed to retrieve proper store ID from database")
+        } catch (error) {
+          logStatus({ route: 'POST: api/stores', operation: 'Assert results of: db.Store.create', resonse: response }, error)
         }
 
-        // Wait until all the category entries are created, and then report status and new store's id after all operations have succeeded
-        Promise.all(promiseList).then((results) => {
-          res.json({ success: true, newStoreId: results[0].StoreId });
-        })
-          // Report any errors to the console
-          .catch((err => {
-            logStatus({ route: "POST: api/stores", operation: "Promise.all on multiple category creates" }, err)
-            res.send(err);
-            //TODO: Handle error (probably delete entire store) and inform user
-          }))
+        res.status(201).json({newStoreId: newStoreID});
+
+        // Create as many entries in the categoryEntry table as needed 
+        // let promiseList = [];
+        // for (let i = 0; i < categoryList.length; i++) {
+        //   let dbPromise = db.CategoryEntry.create({
+        //     StoreId: newStoreID,
+        //     type: categoryList[i]
+        //   })
+        //   promiseList.push(dbPromise);
+        // }
+
+        // // Wait until all the category entries are created, and then report status and new store's id after all operations have succeeded
+        // Promise.all(promiseList)
+        //   .then((results) => {
+        //     res.json(results);
+        //   })
+        //   // Report any errors to the console
+        //   .catch((err => {
+        //     logStatus({ route: "POST: api/stores", operation: "Promise.all on multiple category creates", response: response}, err)
+        //     res.status(500).send(err);
+        //     //TODO: Handle error (probably delete entire store) and inform user
+        //   }))
 
 
       })
       .catch((err) => {
         logStatus({ route: "POST: api/stores", operation: "db.Store.create()" }, err)
-        res.send(err);
+        res.status(500).send(err);
         //TODO: Handle error and inform user
       })
   })
@@ -429,7 +438,7 @@ module.exports = function (app) {
       // Report any errors to the console
       .catch((err => {
         logStatus({ Route: 'POST: api/category', operation: "Promise.all(databaseQueries)" }, err);
-        res.send(err);
+        res.status(500).send(err);
         //TODO: Handle error (probably delete entire store) and inform user
       }))
   });
@@ -460,86 +469,87 @@ module.exports = function (app) {
   // _________________________________________________________________________________________________ \\
 
   // FOR DEBUG ONLY: SEEDS:
-  app.post("/api/test/seed", function (req, res) {
+  // app.post("/api/test/seed", function (req, res) {
 
-    // Create some stores:
-    async function makeAStore(nm, catList, adrs) {
+  //   // Create some stores:
+  //   async function makeAStore(nm, catList, adrs) {
 
-      return new Promise((resolve) => {
+  //     return new Promise((resolve) => {
 
-        let categoryList = catList;
+  //       let categoryList = catList;
 
-        db.Store.create({
-          name: nm,
-          address: adrs,
-          hasFashion: catList.includes('fashion'),
-          hasFurniture: catList.includes('furniture'),
-          hasHomeGoods: catList.includes('home goods'),
-          hasMisc: catList.includes('misc')
-        }).then((response) => {
+  //       db.Store.create({
+  //         name: nm,
+  //         address: adrs,
+  //         hasFashion: catList.includes('fashion'),
+  //         hasFurniture: catList.includes('furniture'),
+  //         hasHomeGoods: catList.includes('home goods'),
+  //         hasMisc: catList.includes('misc')
+  //       }).then((response) => {
 
-          // Grab new store ID from response & validate
-          let newStoreID = response.dataValues.id;
-          assert((newStoreID) => {
-            try { newStoreID = parseInt(newStoreID) } catch (err) { return false };
-            if (isNaN(newStoreID)) { return false };
-            if (newStoreID < 1) { return false };
-            return true;
-          }, "Failed to retrieve proper store ID from database")
+  //         // Grab new store ID from response & validate
+  //         let newStoreID = response.dataValues.id;
+  //         assert((newStoreID) => {
+  //           try { newStoreID = parseInt(newStoreID) } catch (err) { return false };
+  //           if (isNaN(newStoreID)) { return false };
+  //           if (newStoreID < 1) { return false };
+  //           return true;
+  //         }, "Failed to retrieve proper store ID from database")
 
 
-          // Create as many entries in the categoryEntry table as needed 
-          let promiseList = [];
-          for (let i = 0; i < categoryList.length; i++) {
-            let dbPromise = db.CategoryEntry.create({
-              StoreId: newStoreID,
-              type: categoryList[i]
-            })
-            promiseList.push(dbPromise);
-          }
+  //         // Create as many entries in the categoryEntry table as needed 
+  //         let promiseList = [];
+  //         for (let i = 0; i < categoryList.length; i++) {
+  //           let dbPromise = db.CategoryEntry.create({
+  //             StoreId: newStoreID,
+  //             type: categoryList[i]
+  //           })
+  //           promiseList.push(dbPromise);
+  //         }
 
-          // Wait until all the category entries are created, and then report status and new store's id after all operations have succeeded
-          resolve(Promise.all(promiseList))
-        })
-      })
-    }
-    Promise.all([
-      makeAStore("Joe's Example Business", ['furniture', 'home goods', 'misc'], "95 7th Ave SE, Suit 17, Seattle, WA 98026"),
-      makeAStore("Greg's Salvage", ['furniture', 'fashion', 'misc'], "403 Archon Way NW, Seattle, WA 98026"),
-      makeAStore("BadWill", ['furniture'], "1 Middle Way, Nowhere, AZ 42357")
-    ])
-      // Then some create users
-      .then(() => {
+  //         // Wait until all the category entries are created, and then report status and new store's id after all operations have succeeded
+  //         resolve(Promise.all(promiseList))
+  //       })
+  //     })
+  //   }
+  //   Promise.all([
+  //     makeAStore("Joe's Example Business", ['furniture', 'home goods', 'misc'], "95 7th Ave SE, Suit 17, Seattle, WA 98026"),
+  //     makeAStore("Greg's Salvage", ['furniture', 'fashion', 'misc'], "403 Archon Way NW, Seattle, WA 98026"),
+  //     makeAStore("BadWill", ['furniture'], "1 Middle Way, Nowhere, AZ 42357")
+  //   ])
+  //     // Then some create users
+  //     .then(() => {
 
-        // Create a users:
-        let userCreate = function (name, email, password) {
-          return db.User.create({
-            userName: name,
-            email: email,
-            password: password
-          })
-        }
-        Promise.all([
-          userCreate('TestUserOne', 'UserOne@test.domain', '123456'),
-          userCreate('TestUserTwo', 'UserTwo@test.domain', '123456'),
-          userCreate('TestUserThree', 'UserThree@test.domain', '123456'),
-        ])
-          .then(function () {
-            res.json('Done')
-          })
-          .catch(function (err) {
-            logStatus({ Route: 'Seeds' }, err);
-            res.send(err);
-          });
+  //       // Create a users:
+  //       let userCreate = function (name, email, password) {
+  //         return db.User.create({
+  //           userName: name,
+  //           email: email,
+  //           password: password
+  //         })
+  //       }
+  //       Promise.all([
+  //         userCreate('TestUserOne', 'UserOne@test.domain', '123456'),
+  //         userCreate('TestUserTwo', 'UserTwo@test.domain', '123456'),
+  //         userCreate('TestUserThree', 'UserThree@test.domain', '123456'),
+  //         userCreate('test', 'test', 'test')
+  //       ])
+  //         .then(function () {
+  //           res.json('Done')
+  //         })
+  //         .catch(function (err) {
+  //           logStatus({ Route: 'Seeds' }, err);
+  //           res.status(500).send(err);
+  //         });
 
-      })
-      .catch((err => {
-        logStatus({ Route: 'Seeds' }, err);
-        res.send(err);
-        //TODO: Handle error (probably delete entire store) and inform user
-      }))
+  //     })
+  //     .catch((err => {
+  //       logStatus({ Route: 'Seeds' }, err);
+  //       res.status(500).send(err);
+  //       //TODO: Handle error (probably delete entire store) and inform user
+  //     }))
 
-  });
+  // });
   // END DEBUG ROUTES
   // _________________________________________________________________________________________________ \\
 
