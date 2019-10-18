@@ -1,54 +1,117 @@
-$('#newStoreSubmit').click(function(event) {
-    
-    // Make sure page doesn't reload itself
-    event.preventDefault();
+$(document).ready(function () {
+    var Geocoder = new google.maps.Geocoder();
 
-    // Check that at least one category was selected
-    let checked = $("input[type=checkbox]:checked").length;
+    $('#newStoreSubmit').click(function (event) {
 
-      if(!checked) {
-        $('#noCategoryAlert').removeAttr('hidden');
-        return false;
-      }
+        // Make sure page doesn't reload itself
+        event.preventDefault();
 
-    // Gather info from DOM and store in an object which we can pass directly to our AJAX call
-    let storeInfo = {};
-    let anyCategory = false;
-    $('.categoryInput').each(function(){
+        // Check that at least one category was selected
+        let checked = $("input[type=checkbox]:checked").length;
 
-        if($(this).prop("checked")) {
-            
-            storeInfo[$(this).val()] = true;
-            anyCategory = true;
+        if (!checked) {
+            $('#noCategoryAlert').removeAttr('hidden');
+            return false;
         }
-    })
 
-    storeInfo['name'] = $("#storeName").val();
-    storeInfo['address'] = $('#storeAddress').val();
+        // Validate address
+        let address = $('#storeAddress').val();
+        getGeocode({ address: address })
+            .then((results) => {
 
-    // We're already doing form validation, but let's validate again for safety
-    if (!anyCategory) {
-        alert('Something went wrong!')
-        throw(new Error('No category was selected!'))
-        return;
+                let formattedAddress = results[0].formatted_address
+
+                // If the geocode result is the same as the current address (ie: if the user has already accepted a change, then just proceed)
+                // If not, we need to pop up a modal asking the user if we can change the address for them
+                if (formattedAddress.trim().toLowerCase() == address.trim().toLowerCase()) { 
+                    $('#confirmAddressBody').text(`Are you sure you want to create a new store with the address: ${formattedAddress}`)
+                 }
+                else {
+                    $('#correctedAddressText').text(formattedAddress);
+                }
+                $('#confirmAddress').modal('show');
+                $('#confirmAddressConfirm').click(function () {
+
+                    $('#confirmAddress').modal('hide');
+
+                    // Gather info from DOM and store in an object which we can pass directly to our AJAX call
+                    let storeInfo = {};
+                    let anyCategory = false;
+                    $('.categoryInput').each(function () {
+
+                        if ($(this).prop("checked")) {
+
+                            storeInfo[$(this).val()] = true;
+                            anyCategory = true;
+                        }
+                    })
+
+                    storeInfo['name'] = $("#storeName").val();
+                    storeInfo['address'] = formattedAddress;
+
+                    // We're already doing form validation, but let's validate again for safety
+                    if (!anyCategory) {
+                        alert('Something went wrong!')
+                        throw (new Error('No category was selected!'))
+                        return;
+                    }
+
+                    $.ajax({
+                        dataType: "json",
+                        method: 'POST',
+                        url: '/api/stores',
+                        data: storeInfo
+                    })
+                        .done((info) => {
+                            // On success, inform the user with a modal, then redirect them to the new store page as soon as the modal is dismissed
+                            $('#successModal').modal('show');
+                            $('#successModal').on('hidden.bs.modal', function () {
+                                location.replace(`stores/${info.newStoreId}`)
+                            });
+                        })
+                        .fail((err) => {
+                            console.log('failed')
+                            console.log(err)
+                        })
+
+                })
+
+
+            })
+
+            // Catch block for geocode request
+            .catch((status) => {
+
+                if (status == 'ZERO_RESULTS') {
+                    $('#addressErrorModalMessage').text(`No locations matching that address could be found. Please try another address.`);
+                } else if (status == 'OVER_QUERY_LIMIT') {
+                    $('#addressErrorModalMessage').text(`Too many request to address checking service. Please try again later.`);
+                } else {
+                    $('#addressErrorModalMessage').text(`The address could not be checked due to an unknown error.`);
+                }
+
+                $('#addressErrorModal').modal('show');
+
+                console.log(status);
+            });
+
+    });
+
+    function getGeocode(addressLitteral) {
+        return new Promise(function (res, reject) {
+            Geocoder.geocode(addressLitteral, function (results, status) {
+                if (status == 'OK') {
+                    res(results)
+                } else {
+                    reject(status)
+                }
+            })
+        })
     }
 
-    $.ajax({
-        dataType: "json",
-        method: 'POST',
-        url: '/api/stores',
-        data: storeInfo
-    })
-        .done((info) => {
-            // On success, inform the user with a modal, then redirect them to the new store page as soon as the modal is dismissed
-            $('#successModal').modal('show');
-            $('#successModal').on('hidden.bs.modal', function(){
-                location.replace(`stores/${info.newStoreId}`)
-            });
-        })
-        .fail((err) => {
-            console.log('failed')
-            console.log(err)
-        })
+})
 
-});
+// Deleting this function breaks google maps api integration even though it doesn't "do" anything
+function initMap() {
+    // Do nothing, but stop the google api complaining that this function doesn't exist
+}

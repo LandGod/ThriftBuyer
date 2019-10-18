@@ -1,6 +1,7 @@
 // Requiring path to so we can use relative routes to our HTML files
 var path = require("path");
 var db = require("../models");
+var GMAPSAPIKEY = process.env.GMAPS_API_KEY;
 
 // Requiring our custom middleware for checking if a user is logged in
 var isAuthenticated = require("../config/middleware/isAuthenticated");
@@ -24,10 +25,12 @@ module.exports = function (app) {
     if (req.user) { logInOut = logoutButton }
     else { res.redirect('/login'); return };
 
+
     res.render("addstore", {
       pageTitle: 'Add Store | ThriftBuyer',
       pageSpecificJs: '/js/addstore.js',
-      loginLogout: logInOut
+      loginLogout: logInOut,
+      GMAPSAPIKEY: GMAPSAPIKEY
     });
   });
 
@@ -36,11 +39,11 @@ module.exports = function (app) {
     // Will be used to add 'disabled' to add category button if user is not logged in
     let addCatDisable;
 
-    if (req.user) { 
+    if (req.user) {
       logInOut = logoutButton;
       addCatDisable = '';
     }
-    else { 
+    else {
       logInOut = loginButton;
       addCatDisable = 'disabled';
     };
@@ -63,14 +66,14 @@ module.exports = function (app) {
               let currentPossibleCategory = possibleCategories[i];
               if (currentPossibleCategory === 'HomeGoods') { currentPossibleCategory = 'Home Goods' }
               categories.push(currentPossibleCategory);
-              
+
               // Remove it from addableCategories
-              possCat: for( let j = 0; j < addableCategories.length; j++){ 
-                if ( addableCategories[j] === possibleCategories[i]) {
-                  addableCategories.splice(j, 1); 
+              possCat: for (let j = 0; j < addableCategories.length; j++) {
+                if (addableCategories[j] === possibleCategories[i]) {
+                  addableCategories.splice(j, 1);
                   break possCat;
                 }
-             }
+              }
             }
 
           }
@@ -108,7 +111,7 @@ module.exports = function (app) {
     // Figure out where the user came from so that we can send them back there after login (unless they came from external)
     let backURL = req.header('Referer') || '/';
     if ((backURL.indexOf('localhost') === -1 && (backURL.indexOf('tranquil-temple-50803.herokuapp.com/') === -1))) { backURL = '/' };
-    if (backURL.includes('signup')) {backURL = '/'} // Avoid wierd redirect loops
+    if (backURL.includes('signup')) { backURL = '/' } // Avoid wierd redirect loops
 
     // If the user already has an account, bounce them back to the page they were already one
     if (req.user) {
