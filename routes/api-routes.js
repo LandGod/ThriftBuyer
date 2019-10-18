@@ -587,14 +587,14 @@ function createRatingsUpdatePackage(currentCategoryData, newNoteData, oldNoteDat
       if (isNaN(oldRating)) { oldRating = 0 };
 
       // If the old rating was nill, then we'll need to update the global ratings average as well as increment the number of total ratings
-      if (isNill(oldNoteData[ratingTypes[i]])) {
+      if (oldTotal === 0) {
 
-        globalUpdatePackage[`${ratingTypes[i]}Avg`] = ((oldAvg * oldTotal) + newRating) / (oldTotal + 1);
-        globalUpdatePackage[`${ratingTypes[i]}Total`] = oldTotal + 1;
+        globalUpdatePackage[`${ratingTypes[i]}Avg`] = newRating;
+        globalUpdatePackage[`${ratingTypes[i]}Total`] = 1;
 
       }
       // If the new rating is being set to null, then we'll need to update the global ratings and decrement the total number of ratings
-      else if (isNill(newNoteData[ratingTypes[i]])) {
+      else if (newRating === 0) {
 
         // First we need to check for the edge case of removing the last/only rating as that will lead to a 0 divided by 0 situation
         // also there is no point in doing math to figure out the number or average if we already know we'll have no more ratings. Ie 0 is 0 is 0
@@ -609,7 +609,9 @@ function createRatingsUpdatePackage(currentCategoryData, newNoteData, oldNoteDat
       }
 
       // Finally, if we're changing from non-null to non-null value, then we can simply edit the average and leave the total alone
-      else if ((newNoteData[ratingTypes[i]]) && (oldNoteData[ratingTypes[i]])) {
+      else if (newRating && oldRating) {
+
+        assert((oldTotal !== 0), 'Previous total ratings is zero in else if section');
 
         globalUpdatePackage[`${ratingTypes[i]}Avg`] = (((oldAvg * oldTotal) - oldRating) + newRating) / (oldTotal);
 

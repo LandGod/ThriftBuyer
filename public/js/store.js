@@ -8,6 +8,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
     const storeId = $('#storeInfo').attr('storeId');
     const ratingTypes = ['quality', 'quantity', 'price'];
     let currentCategoryId;  // Must be updated each time we display a new category
+    let currentCatgoryIndex;
 
 
     // Iterate through category buttons on page to build list of available categories
@@ -39,7 +40,30 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
     // Attach click event for each personal rating button
     $('body').on('click', '.personalRatingButton', function () {
         let button = $(this);
+        let ratingType = button.attr('ratingType');
 
+        //If the rating clicked is already the current rating saved for this user, then do nothing
+        if (button.attr('currentRating') === 'true') { return };
+
+        let updatePackage = {};
+        updatePackage['categoryId'] = currentCategoryId;
+
+        updatePackage[`${ratingType}`] = button.val();
+
+        $.ajax({
+            dataType: "json",
+            method: 'PUT',
+            url: '/api/note',
+            data: updatePackage
+        })
+            .done(() => {
+                // On success, update the user ratings buttons to reflect new ratings
+                renderUserRatings();
+                renderCategory(currentCatgoryIndex);
+            })
+            .fail((err) => {
+                console.log(err)
+            })
 
 
     });
@@ -137,6 +161,8 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
     // Note that rather than supply a category by name, we'll simply reference its index within the list of available categories
     function renderCategory(index) {
 
+        currentCatgoryIndex = index;
+
         // Before actually grabbing any data, we'll indicate to the user that we're selecting a new category by setting all buttons
         // to bootstrap gray (secondary)
         $('.categoryTitleButton').removeClass('btn-primary');
@@ -183,6 +209,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
 
                 // After constructing the global elements of the category, we'll update  the user notes section if possible
                 renderNote();
+                renderUserRatings();
             })
 
             .fail(function (err) {
@@ -235,6 +262,72 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
             });
 
     };
+
+    function renderUserRatings() {
+
+        // First thing we'll reset the buttons to thier default settings so that we don't cary over old info
+        $('.personalRatingButton').removeClass('btn-primary');
+        $('.personalRatingButton').addClass('btn-light');
+        $('.personalRatingButton').attr('currentRating', 'false');
+
+        // We'll start by checking the database to see if the user has any data to render
+        $.ajax({
+            dataType: "json",
+            method: "GET",
+            url: '/api/note',
+            data: {
+                categoryId: currentCategoryId
+            }
+        })
+            .done((results) => {
+                let qualityRating = results.quality || 0;
+                let quantityRating = results.quantity || 0;
+                let priceRating = results.price || 0;
+
+                let allThreeRatings = [qualityRating, quantityRating, priceRating];
+                let allThreeTypes = ['quality', 'quantity', 'price'];
+
+                // Scan through each possible rating (1 through 3), and then each button each category
+                for (let i = 1; i < 4; i++) {
+                    for (let j = 0; j < allThreeRatings.length; j++) {
+                        if (parseInt(allThreeRatings[j]) >= parseInt(i)) {
+
+                            // If the category rating is greater than or equal to the button value
+                            // color in the button
+                            $(`#${allThreeTypes[j]}Rate${i}`).removeClass('btn-light');
+                            $(`#${allThreeTypes[j]}Rate${i}`).addClass('btn-primary');
+
+                            // If the value is exactly equal, set the button's 'currentRating' value to 'true'
+                            // This keeps us from updating the rating to a value it already is
+                            if (parseInt(allThreeRatings[j]) === parseInt(i)) {
+                                $(`#${allThreeTypes[j]}Rate${i}`).attr('currentRating', 'true');
+                            }
+
+                        }
+                    }
+                }
+
+            })
+
+            .fail(function (err) {
+
+                // If we recieve an error, we first want to check if its one of two expected errors
+                // 401 simply means the user isn't logged in and 404 means they are but just don't have any saved info.
+                // Neither of these are actually an error, per se, but nontheless should be dealt with
+
+                if (err.status === 401) {
+                    $('.personalRatingButton').attr('diabled', 'true');
+                }
+                else if (err.status === 404) {
+                    $('.personalRatingButton').removeAttr('diabled');
+                }
+                else {
+                    console.log('Something went wrong.')
+                    console.log(err)
+                }
+
+            });
+    }
 
     // Calls toUpperCase only on the first letter of each word in the string, then returns the entire modified string
     function capitalize(string) {
