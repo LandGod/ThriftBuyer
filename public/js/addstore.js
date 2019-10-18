@@ -70,8 +70,15 @@ $(document).ready(function () {
                             });
                         })
                         .fail((err) => {
+                            if (err.responseJSON.original.code === 'ER_DUP_ENTRY') {
+
+                                $('#addressErrorModalMessage').text(`A store with that address already exists in the database. You may not create duplicate store entries.`);
+                                $('#addressErrorModal').modal('show');
+                            }
+                            else {
                             console.log('failed')
                             console.log(err)
+                            }
                         })
 
                 })
