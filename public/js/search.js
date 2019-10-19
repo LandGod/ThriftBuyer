@@ -5,6 +5,7 @@ $(document).ready(() => {
     // and then use them to parse the results
     let latitude;
     let longitude;
+    let distance;
 
     // Setup geocode api hook
     var Geocoder = new google.maps.Geocoder();
@@ -31,12 +32,13 @@ $(document).ready(() => {
         // Reset global variables to defaults to we don't contaminate the new search with old constraints
         latitude = undefined;
         longitude = undefined;
+        distance = undefined;
 
         //First make sure that if an address was provided, it can be validated
         // unlike with creating a store, we'll do this silently and only bother the user
         // if no matches can be found
         let location = $('#fromHereField').val();
-        let distance = $('#distanceSelect').val();
+        distance = $('#distanceSelect').val();
         let geocodeResults;
         let geocodeError;
 
@@ -65,7 +67,7 @@ $(document).ready(() => {
                     }
                 }
 
-                
+
 
                 // Populate with the lat/lng values we just got, if there were any
                 searchData['latitude'] = latitude;
@@ -121,6 +123,14 @@ $(document).ready(() => {
         // If we do have results, however, we need to format each once nicely, then append it to the results area
         for (let i = 0; i < results.length; i++) {
 
+            // Check latitude/longitude from incoming result
+            let thisLat = results[i].latitude;
+            let thisLng = results[i].longitude;
+
+            // Use much more rigerous math to see if the result is actually within the distance parameter
+            // If it is not, skip it
+            if (findDistance(thisLat, thisLng, latitude, longitude) > distance) { continue };
+
             // Set up some containers for our data
             let newRow = $('<div class="row my-3">');
             let newCol1 = $('<div class="col-md-5 col-12">');
@@ -149,12 +159,28 @@ $(document).ready(() => {
         }
     };
 
-    function findDistance(lat1, lng1, lat2, lng2) {
-        // This is just the pythagorean theorum 
-        let a = lat1 - lat2;
-        let b = lng1 - lng2;
-
-        return Math.sqrt((a * a) + (b * b))
+    function findDistance(lat1, lon1, lat2, lon2, unit) {
+        // From: https://www.geodatasource.com/developers/javascript (LGPLv3 Free Licence) 
+        // No argument to unit === miles
+        if ((lat1 == lat2) && (lon1 == lon2)) {
+            return 0;
+        }
+        else {
+            var radlat1 = Math.PI * lat1 / 180;
+            var radlat2 = Math.PI * lat2 / 180;
+            var theta = lon1 - lon2;
+            var radtheta = Math.PI * theta / 180;
+            var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+            if (dist > 1) {
+                dist = 1;
+            }
+            dist = Math.acos(dist);
+            dist = dist * 180 / Math.PI;
+            dist = dist * 60 * 1.1515;
+            if (unit == "K") { dist = dist * 1.609344 }
+            if (unit == "N") { dist = dist * 0.8684 }
+            return dist;
+        }
     }
 
     // This will clear out the validation error class from the address field (if present)
