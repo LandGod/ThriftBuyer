@@ -22,8 +22,9 @@ module.exports = function (app) {
 
   app.get("/addstore", function (req, res) {
 
-    if (req.user) { logInOut = logoutButton }
-    else { res.redirect('/login'); return };
+    // FOR DEBUG MODE ONLY!!!!
+    /* if (req.user) { */ logInOut = logoutButton //}
+    //else { res.redirect('/login'); return };
 
 
     res.render("addstore", {

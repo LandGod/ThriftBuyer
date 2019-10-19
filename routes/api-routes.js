@@ -137,10 +137,12 @@ module.exports = function (app) {
 
     let storeName = req.body.name;
     let address = req.body.address;
-    let fashion = req.body.fashion
-    let furniture = req.body.furniture
-    let homeGoods = req.body.homeGoods
-    let misc = req.body.misc
+    let fashion = req.body.fashion;
+    let furniture = req.body.furniture;
+    let homeGoods = req.body.homeGoods;
+    let misc = req.body.misc;
+    let lat = req.body.latitude;
+    let lng = req.body.longitude
 
     let categoryList = [];
     for (let i = 0; i < PossibleCategories.length; i++) {
@@ -165,7 +167,9 @@ module.exports = function (app) {
       hasFashion: fashion,
       hasFurniture: furniture,
       hasHomeGoods: homeGoods,
-      hasMisc: misc
+      hasMisc: misc,
+      latitude: lat,
+      longitude: lng
     })
       .then((response) => {
 

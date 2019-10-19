@@ -1,3 +1,7 @@
+var testGeoCode;
+
+let userConfirmed = false; // Used to keep track of whether the confirm address modal closing is due to a cancel of confirm
+
 $(document).ready(function () {
     var Geocoder = new google.maps.Geocoder();
 
@@ -20,6 +24,8 @@ $(document).ready(function () {
             .then((results) => {
 
                 let formattedAddress = results[0].formatted_address
+                let latitude = results[0].geometry.location.lat();
+                let longitude = results[0].geometry.location.lng();
 
                 // If the geocode result is the same as the current address (ie: if the user has already accepted a change, then just proceed)
                 // If not, we need to pop up a modal asking the user if we can change the address for them
@@ -30,8 +36,12 @@ $(document).ready(function () {
                     $('#correctedAddressText').text(formattedAddress);
                 }
                 $('#confirmAddress').modal('show');
+
+                $('#confirmAddressConfirm').off(); // Remove old event listenders so we aren't also submitting old data
+
                 $('#confirmAddressConfirm').click(function () {
 
+                    userConfirmed = true;
                     $('#confirmAddress').modal('hide');
 
                     // Gather info from DOM and store in an object which we can pass directly to our AJAX call
@@ -48,6 +58,8 @@ $(document).ready(function () {
 
                     storeInfo['name'] = $("#storeName").val();
                     storeInfo['address'] = formattedAddress;
+                    storeInfo['latitude'] = latitude;
+                    storeInfo['longitude'] = longitude;
 
                     // We're already doing form validation, but let's validate again for safety
                     if (!anyCategory) {
@@ -115,6 +127,22 @@ $(document).ready(function () {
             })
         })
     }
+
+    // testGeoCode = function (address) {
+    //     getGeocode({ address: address })
+    //             .then((results) => {
+    //                 console.log(results)
+
+    //                 console.log('location:')
+    //                 console.log(results[0].geometry.location)
+    //                 console.log(results[0].geometry.location.lat())
+    //                 console.log(results[0].geometry.location.lng())
+    //             })
+    //             .catch((status) => {
+    //                 console.log('Error:')
+    //                 console.log(status)
+    //             })
+    // }
 
 })
 

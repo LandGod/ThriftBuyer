@@ -93,3 +93,11 @@ function displaySearchResults(results) {
 
     }
 };
+
+function findDistance(lat1, lng1, lat2, lng2) {
+    // This is just the pythagorean theorum 
+    let a = lat1 - lat2;
+    let b = lng1 - lng2;
+
+    return Math.sqrt((a * a) + (b * b))
+}

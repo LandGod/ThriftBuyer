@@ -30,6 +30,16 @@ module.exports = function (sequelize, DataTypes) {
         hasMisc: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
+        },
+
+        latitude: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+        },
+        
+        longitude: {
+            type: DataTypes.FLOAT,
+            allowNull: false
         }
 
     });
