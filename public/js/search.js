@@ -62,6 +62,7 @@ $(document).ready(() => {
                         longitude = geocodeResults[0].geometry.location.lng();
                         searchData['distance'] = distance;
                     } else {
+                        $('#fromHereField').addClass('is-invalid')
                         console.log("And this is where we'd pop up an error modal")
                         console.log(geocodeError)
                     }
