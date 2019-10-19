@@ -64,6 +64,7 @@ module.exports = function (app) {
 
   // Route for performing a store seach using various parameters
   app.get("/api/search", function (req, res) {
+    const MaxPossibleDistance = 12450;
     let request = req.query;
 
     // Search Parameters=default:
@@ -78,7 +79,36 @@ module.exports = function (app) {
     //TODO: Data validation for ratings
     try { } catch (error) { res.status(400).send(error); return };
 
+    // Grab coordinates for where we're measuring distance from and the radius
+    // If no location is specified, then use the center of the universe
+    let lng = parseFloat(request.longitude) || -122.3510629;
+    let lat = parseFloat(request.latitude) || 47.6495905;
+    let distance = parseFloat(request.distance) || MaxPossibleDistance;
+
+    // Because the distance between lattitudinal and longitudinal degrees varies based upon where on the earth you are,
+    // we can't do accurate one-to-one math using single datapoints of lattitude or longitude. However, we can do some 
+    // really dirty and inacurate math, which will at least eliminate results that are WAY outside our desired radius.
+    // So we'll just say that the distance in miles for a sinlge degree of lat or lng is 69, and the use that to do a 
+    // between contraint on our database query
+    console.log(`\n******DEBUG*********`)
+    let lngBetween1 = lng + (distance / 69);
+    console.log(`lngBetween1 = ${lng} + ((${distance / 69}) = (${distance} / 69)) = ${lng + (distance / 69)}`)
+    let lngBetween2 = lng - (distance / 69);
+    console.log(`lngBetween2 = ${lng} - ((${distance / 69}) = (${distance} / 69)) = ${lng - (distance / 69)}`)
+    let latBetween1 = lat + (distance / 69);
+    console.log(`latBetween1 = ${lat} + ((${distance / 69}) = (${distance} / 69)) = ${lat + (distance / 69)}`)
+    let latBetween2 = lat - (distance / 69);
+    console.log(`latBetween2 = ${lat} - ((${distance / 69}) = (${distance} / 69)) = ${lat - (distance / 69)}`)
+
+    console.log(`********************************\n`)
+
     db.Store.findAll({
+      where: {
+        // The order of the two elements of the list supplied to Op.between seems like it shouldn't matter at all
+        // IT MATTERS A LOT. Changing the order completely breaks the whole thing. I wish I knew why.
+        latitude: { [Op.between]: [latBetween2, latBetween1] },
+        longitude: { [Op.between]: [lngBetween2, lngBetween1] }
+      },
       include: [
         {
           model: db.CategoryEntry,
@@ -186,7 +216,7 @@ module.exports = function (app) {
           logStatus({ route: 'POST: api/stores', operation: 'Assert results of: db.Store.create', resonse: response }, error)
         }
 
-        res.status(201).json({newStoreId: newStoreID});
+        res.status(201).json({ newStoreId: newStoreID });
 
         // Create as many entries in the categoryEntry table as needed 
         // let promiseList = [];
@@ -612,6 +642,13 @@ function createRatingsUpdatePackage(currentCategoryData, newNoteData, oldNoteDat
         }
       }
 
+      // If the old global average and total were not 0, but the personal oldRating is zero, then we can just do a straight up add
+      // since this is our first rating, personally, on this category
+      else if (oldRating === 0) {
+        globalUpdatePackage[`${ratingTypes[i]}Avg`] = ((oldAvg * oldTotal) + newRating ) / (oldTotal + 1);
+          globalUpdatePackage[`${ratingTypes[i]}Total`] = oldTotal + 1;
+      }
+
       // Finally, if we're changing from non-null to non-null value, then we can simply edit the average and leave the total alone
       else if (newRating && oldRating) {
 
@@ -623,7 +660,7 @@ function createRatingsUpdatePackage(currentCategoryData, newNoteData, oldNoteDat
 
       // Above was all cases, so if the below else clause triggers it means an error state
       else {
-
+        logStatus({newRating:newRating, oldRating:oldRating, oldTotal: oldTotal, oldAvg: oldAvg})
         let err = new Error('An uknown error occured while attempting to parse date for the update.');
         throw (err);
       }

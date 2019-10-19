@@ -16,6 +16,7 @@ module.exports = function (app) {
     res.render("search", {
       pageTitle: 'Search Stores | ThriftBuyer',
       pageSpecificJs: '/js/search.js',
+      GMAPSAPIKEY: GMAPSAPIKEY,
       loginLogout: logInOut
     });
   });
