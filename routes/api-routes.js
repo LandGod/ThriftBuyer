@@ -414,6 +414,23 @@ module.exports = function (app) {
 
   });
 
+  // Route for getting all tags from the datbase for a particular CategoryEntry
+  app.get("/api/tags", function (req, res) {
+
+    db.Tag.findAll({
+      where: {
+        CategoryEntryId: req.query.categoryId,
+        tagText: {[Op.notLike]: 'DEAFULTTAG-DONOTDELET'}
+      }
+    })
+    .then((results) => {res.status(200).json(results)})
+    .catch((err) => {
+      console.log(err)
+      res.status(500).send(err)
+    })
+
+  });
+
   // Route for adding a category to a store 
   app.post("/api/category", function (req, res) {
     let StoreId = req.body.StoreId;

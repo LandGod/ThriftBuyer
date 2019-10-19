@@ -56,8 +56,6 @@ $(document).ready(() => {
 
                 if (location && distance) {
                     if (geocodeResults) {
-                        console.log('Go GO Gadget geocodeResults!')
-                        console.log(geocodeResults)
                         latitude = geocodeResults[0].geometry.location.lat();
                         longitude = geocodeResults[0].geometry.location.lng();
                         searchData['distance'] = distance;
@@ -86,9 +84,6 @@ $(document).ready(() => {
                 searchData['minimumQuality'] = $(`input[name="${qualityName}"]:checked`).val();
                 searchData['minimumQuantity'] = $(`input[name="${quantityName}"]:checked`).val();
                 searchData['minimumPrice'] = $(`input[name="${priceName}"]:checked`).val();
-
-                console.log('DEBUG: Search Data:')
-                console.log(searchData)
 
                 // Query DB with user info
                 $.ajax({

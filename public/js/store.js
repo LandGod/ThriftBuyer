@@ -19,6 +19,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
 
     // Before setting up our on click event, we'll go ahead and render the first category we have available
     renderCategory(0);
+    renderTags();
 
     // Attach click event to each category button
     $('body').on('click', '.categoryTitleButton', function () {
@@ -62,6 +63,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
                 renderCategory(currentCatgoryIndex);
             })
             .fail((err) => {
+                console.log('Error:')
                 console.log(err)
             })
 
@@ -90,6 +92,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
                 $('#saveSuccessModal').modal('show');
             })
             .fail((err) => {
+                console.log('ERROR:')
                 console.log(err)
             })
 
@@ -210,11 +213,12 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
                 // After constructing the global elements of the category, we'll update  the user notes section if possible
                 renderNote();
                 renderUserRatings();
+                renderTags();
             })
 
             .fail(function (err) {
-                console.log('querie failed');
-                console.log(err);
+                    console.log('querie failed');
+                    console.log(err);
             })
     };
 
@@ -328,6 +332,35 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
 
             });
     }
+
+    function renderTags() {
+
+        if (!currentCategoryId) {return}
+
+        $.ajax({
+            dataType: "json",
+            method: "GET",
+            url: '/api/tags',
+            data: {
+                categoryId: currentCategoryId
+            }
+        })
+            .done((results) => {
+                $('#tagsGoHere').empty()
+
+                if (results.length === 0) {$('#tagsGoHere').text('This category does not have any tags on it yet.')}
+                
+                for (let i = 0; i < results.length; i++) {
+                    let tagText = results[i].tagText;
+                    if (i > 0) {tagText = ', ' + tagText}
+                    $('#tagsGoHere').append(tagText)
+                }
+            })
+            .catch((err) => {
+                console.log('Error:')
+                console.log(err)
+            });
+    };
 
     // Calls toUpperCase only on the first letter of each word in the string, then returns the entire modified string
     function capitalize(string) {
