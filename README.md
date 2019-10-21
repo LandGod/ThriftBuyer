@@ -9,3 +9,12 @@ PropShopper runs on a Node.js server, using Express and Handlebars to serve cont
 ### About
 
 This application was developed specifically to help properties shoppers in the theatre industry. It was developed and coded entirely by Daniel Gold. You can check out more from Daniel on [Github](https://github.com/landgod) or on his personal [website](http://dangold.me/). Feel free to connect via [LinkedIn](https://www.linkedin.com/in/danjasongold/) or email to DanielJasonGold@gmail.com.
+
+### Current Developement
+
+PropShopper is currently still in early development and certain features, like tagging, are still in developement. Current planned features include:
+* Allowing users to add tags to stores
+* Allowing users to search for stores by name
+* Google maps integration
+* User account settings
+* Allow users to confine searches to stores they have notes on
