@@ -49,6 +49,38 @@
         </div>
     </div>
 </div>
+
+{{!-- Add Tag Modal --}}
+<div class="modal fade" id="addTag" tabindex="-1" role="dialog" aria-labelledby="addTag" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTagTitle">Are you sure?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group-inline col-6, col-md-5">
+                        <label class="h4" for="addTagField">Add Tag</label>
+                        <input type="text" class="form-control" id="addTagField" aria-describedby="tagHelp"
+                            placeholder="Mid-century Modern" maxlength="20">
+                        <small id="tagHelp" class="form-text text-muted">You may only add one tag at a time.</small>
+                    </div>
+                    <div id='tagAlert' class="alert alert-danger" role="alert">
+                        Sorry, something went wrong.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="addTagCancel" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                <button type="button" id="addTagConfirm" class="btn btn-success">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{!-- /Modals --}}
 
 {{!-- Main page content --}}
@@ -181,9 +213,9 @@
 
         <div class="col-12">
             <p> <span class="h5">Tags: </span><span id="tagsGoHere">
-                    
+
                 </span>
-                <button class="btn btn-sm btn-secondary" disabled>+</button>
+                <button id="addTagButon" class="btn btn-sm btn-secondary" disabled>+</button>
             </p>
         </div>
 

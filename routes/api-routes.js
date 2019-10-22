@@ -383,6 +383,7 @@ module.exports = function (app) {
     let tagInfoPackage = req.body;
     // Validate that incoming information is useable and propper 
     try {
+      tagInfoPackage['UserId'] = req.user.id
       assert(tagInfoPackage.tagText, 'No data tag text recieved.')
       tagInfoPackage.tagText = tagInfoPackage.tagText.trim().toLowerCase();
       assert(tagInfoPackage.tagText, 'Tag text may not be blank');
@@ -391,7 +392,12 @@ module.exports = function (app) {
       assert(tagInfoPackage.UserId, 'Missing user ID of tag creator');
       assert(!isNaN(parseInt(tagInfoPackage.UserId)), 'Invalid user ID');
     } catch (err) {
-      logStatus({ route: "POST: api/tag", operation: "Data Validation" }, err)
+      logStatus({ 
+        route: "POST: api/tag", 
+        operation: "Data Validation", 
+        "tagInfoPackage.tagText": tagInfoPackage.tagText, 
+        "tagInfoPackage.CategoryEntryId": tagInfoPackage.CategoryEntryId
+      }, err)
       res.status(400).send(err);
       return;
     }
@@ -403,8 +409,8 @@ module.exports = function (app) {
     })
       .then((response) => {
         // TODO: Test the below code for reporting failure due to duplicate tag
-        if (response[0] > 0) { res.status(400).send("Tag already exists.") };
-        res.status(200).json(response);
+        if (response[0] > 0) { res.status(400).send("Tag already exists.") }
+        else {res.status(200).json(response)};
       })
       .catch((err) => {
         logStatus({ route: "POST: api/tag", operation: "db.Tag.findOrCreate()" }, err);

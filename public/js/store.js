@@ -160,6 +160,57 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
 
     });
 
+    // Add tag button handler. Not able to be triggerd unless the user is logged in, since
+    // otherwise the button with have 'disabled' on it
+    $('#addTagButon').click(function (event) {
+
+        // Make sure the bad intput alert is hidden and reset to default text
+        $('#tagAlert').attr('hidden', 'true');
+        $('#tagAlert').text('Sorry, something went wrong.')
+
+        // Remove any existing text previously entered by user
+        $('#addTagField').val('');
+
+        // Show modal
+        $('#addTag').modal('show');
+
+        // Clear out any existing click handlers for the submit button
+        $('#addTagConfirm').off();
+
+        // Set new click handler for accept button
+        $('#addTagConfirm').click(function (event) {
+
+            // Check for valid input. If input is not valid, show boostrap alert w/ error message
+            if ($('#addTagField').val().length < 2) {
+                $('#tagAlert').text('Tag too short. Must be at least 2 letters long.');
+                $('#tagAlert').removeAttr('hidden');
+                
+            } else {
+                $.ajax({
+                    dataType: "json",
+                    method: 'POST',
+                    url: '/api/tag',
+                    data: {
+                        CategoryEntryId: currentCategoryId,
+                        tagText: $('#addTagField').val()
+                    }
+                })
+                    .done(() => {
+                        $('#addTagField').val('')
+                        renderTags();
+                        $('#addTag').modal('hide');
+                        
+                    })
+                    .fail((err) => {
+                        $('#tagAlert').text('Sorry, something went wrong.');
+                        console.log('Error:');
+                        console.log(err);
+                        $('#tagAlert').removeAttr('hidden');
+                    });
+            }
+        });
+    });
+
     // Define function for rendering all information about one category onto a store page
     // Note that rather than supply a category by name, we'll simply reference its index within the list of available categories
     function renderCategory(index) {
@@ -217,8 +268,8 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
             })
 
             .fail(function (err) {
-                    console.log('querie failed');
-                    console.log(err);
+                console.log('querie failed');
+                console.log(err);
             })
     };
 
@@ -241,6 +292,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
                 let noteText = results.textNote;
                 $('#NoteTextArea').val(noteText);
                 $('#saveButton').removeAttr('disabled');
+                $('#addTagButon').removeAttr('disabled');
 
             })
 
@@ -257,6 +309,8 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
                 }
                 else if (err.status === 404) {
                     $('#saveButton').removeAttr('disabled');
+                    $('#addTagButon').removeAttr('disabled');
+
                 }
                 else {
                     console.log('Something went wrong.')
@@ -335,7 +389,11 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
 
     function renderTags() {
 
-        if (!currentCategoryId) {return}
+        // Because this function doesn't interact with user login status, and others already do,
+        // we'll call the function to enable the add tag button in renderNote()'s ajax .done clause
+        // since that can only execute when a user is logged in
+
+        if (!currentCategoryId) { return }
 
         $.ajax({
             dataType: "json",
@@ -348,11 +406,11 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
             .done((results) => {
                 $('#tagsGoHere').empty()
 
-                if (results.length === 0) {$('#tagsGoHere').text('This category does not have any tags on it yet.')}
-                
+                if (results.length === 0) { $('#tagsGoHere').html('<span class="text-secondary">This category does not have any tags on it yet.</span>') }
+
                 for (let i = 0; i < results.length; i++) {
                     let tagText = results[i].tagText;
-                    if (i > 0) {tagText = ', ' + tagText}
+                    if (i > 0) { tagText = ', ' + tagText }
                     $('#tagsGoHere').append(tagText)
                 }
             })
