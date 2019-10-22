@@ -28,7 +28,7 @@
                     <a class="nav-link" href="/addstore">Add store</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link disabled" href="/account">Account</a>
+                    <span title="These features coming soon!"><a class="nav-link disabled" href="/account">Account</a></span>
                 </li>
             </ul>
             <div class="nav-item">
@@ -36,7 +36,15 @@
             </div>
         </div>
     </nav>
-    {{{body}}}
+    <div id="footerPossitioningDiv">
+        {{{body}}}
+    </div>
+    <footer class="footer py-2">
+        <div class="container text-center">
+            <span class="text-muted mt-4">Copyright 2019 Daniel Gold | This app is still in beta. Current version: 0.35 | 
+                <a href="mailto:danieljasongold@gmail.com?subject=ThriftBuyerIssueReport" target="__blank">Report a problem</a></span>
+        </div>
+    </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/umd/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>

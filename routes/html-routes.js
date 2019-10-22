@@ -94,7 +94,8 @@ module.exports = function (app) {
             categoryAddShowHide: hidden,
             categoriesToAdd: addableCategories,
             addCatDisable: addCatDisable,
-            loginLogout: logInOut
+            loginLogout: logInOut,
+            googleStoreAddress: dbData.address.split(' ').join('+')
           })
         } else {
           // If the server return no data, give the user a page stub informing them that no such store exists

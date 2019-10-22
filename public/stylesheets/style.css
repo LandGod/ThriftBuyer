@@ -7,6 +7,14 @@ h6 .addressLink {
   color: darkgray;
 }
 
+#footerPossitioningDiv {
+  min-height: 86.7vh;
+}
+
+footer {
+  background-color: lightgrey;
+}
+
 /* #personalNotesColumn {
   border: 2px solid black;
 }
