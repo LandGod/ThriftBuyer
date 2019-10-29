@@ -99,7 +99,8 @@
         <div class="col-12 col-md-6">
 
             <h3>Located at</h3>
-            <p><a class="text-secondary" href="https://www.google.com/maps/place/{{googleStoreAddress}}" target="__blank">{{address}}</a></p>
+            <p><a class="text-secondary" href="https://www.google.com/maps/place/{{googleStoreAddress}}"
+                    target="__blank">{{address}}</a></p>
         </div>
     </div>
     {{!-- /Address Row --}}
@@ -134,8 +135,35 @@
                 {{!-- Ratings --}}
                 <div class="col-12 col-md-3" id="ratingsColumn">
 
-                    {{!-- This will be inserted via the page's javascript --}}
+                    <table class="ratingsTable">
+                        <tbody>
+                            <tr class="qualityRatingStars">
+                                <td>Quality</td>
+                                <td>
+                                    <div class="stars-outer">
+                                        <div class="stars-inner"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="quantityRatingStars">
+                                <td>Quantity</td>
+                                <td>
+                                    <div class="stars-outer">
+                                        <div class="stars-inner"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="priceRatingStars">
+                                <td>Price</td>
+                                <td>
+                                    <div class="stars-outer">
+                                        <div class="stars-inner"></div>
+                                    </div>
+                                </td>
+                            </tr>
 
+                        </tbody>
+                    </table>
                 </div>
                 {{!-- /Ratings --}}
 

@@ -184,7 +184,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
             if ($('#addTagField').val().length < 2) {
                 $('#tagAlert').text('Tag too short. Must be at least 2 letters long.');
                 $('#tagAlert').removeAttr('hidden');
-                
+
             } else {
                 $.ajax({
                     dataType: "json",
@@ -199,7 +199,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
                         $('#addTagField').val('')
                         renderTags();
                         $('#addTag').modal('hide');
-                        
+
                     })
                     .fail((err) => {
                         $('#tagAlert').text('Sorry, something went wrong.');
@@ -235,8 +235,9 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
         $(buttonClassName).addClass('btn-primary');
 
         // Then we'll clear out the existing data to make way for the new data
-        ratingsArea.empty();
+        clearRatingsArea();
 
+        // Retrieve information about the selected store category
         $.ajax({
             dataType: "json",
             url: '/api/category',
@@ -249,17 +250,20 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
                 // First we update our global current category variable, since we'll need this info to work with user specific notes
                 currentCategoryId = results.id;
 
-                // Then construct the rating rows and output it to the DOM
+                // Save ratings data
+                const ratingsData = {};
                 for (let i = 0; i < ratingTypes.length; i++) {
-                    let categoryRow = $('<div class="row">');
-                    let categoryCol = $('<div class="col-md-6 col-12">');
+                    ratingsData[ratingTypes[i]] = results[`${ratingTypes[i]}Avg`];
+                };
 
-                    categoryCol.append(`<span class="h5">${capitalize(ratingTypes[i])}: </span><span>${results[ratingTypes[i] + 'Avg']}</span>`);
-
-                    categoryRow.append(categoryCol);
-
-                    ratingsArea.append(categoryRow);
+                // Render stars based on rating percentage
+                for (const key in ratingsData) {
+                    const starPercentage = (ratingsData[key] / 3) * 100;
+                    const starPercentageRounded = `${(Math.round(starPercentage / 10) * 10)}%`;
+                    $(`.${key}RatingStars .stars-inner`).css('width', starPercentageRounded);
                 }
+
+
 
                 // After constructing the global elements of the category, we'll update  the user notes section if possible
                 renderNote();
@@ -429,6 +433,11 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
         };
 
         return words.join('');
+    };
+
+    // Reverts most dynamic page data (ie: ratings) to defaults prior so that they can be updated
+    function clearRatingsArea() {
+
     };
 
 });

@@ -95,7 +95,8 @@ module.exports = function (app) {
             categoriesToAdd: addableCategories,
             addCatDisable: addCatDisable,
             loginLogout: logInOut,
-            googleStoreAddress: dbData.address.split(' ').join('+')
+            googleStoreAddress: dbData.address.split(' ').join('+'),
+            fontAwesome: true
           })
         } else {
           // If the server return no data, give the user a page stub informing them that no such store exists
@@ -135,25 +136,7 @@ module.exports = function (app) {
     }
   });
 
-  // Here we've add our isAuthenticated middleware to this route.
-  // If a user who is not logged in tries to access this route they will be redirected to the signup page
-  // app.get("/members", isAuthenticated, function (req, res) {
-  //   res.sendFile(path.join(__dirname, "../public/members.html"));
-  // });
-
 };
-
-
-// Default homepage behavior from template
-// We don't want to use this because the app should be useable without logging in.
-// The user only needs to log in to make changes or view thier personal notes
-// However, I'd like to keep this code around in case I want to use it as a reference later:
-
-// // If the user already has an account send them to the members page
-// if (req.user) {
-//   res.redirect("/members");
-// }
-// res.sendFile(path.join(__dirname, "../public/signup.html"));
 
 // HTML for rendering the login/logout button as whichever is appropriate
 let loginButton = `<a class="nav-link" href="/login">Login</a>`;
