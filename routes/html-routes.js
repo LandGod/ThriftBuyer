@@ -1,10 +1,10 @@
 // Requiring path to so we can use relative routes to our HTML files
-var path = require("path");
-var db = require("../models");
-var GMAPSAPIKEY = process.env.GMAPS_API_KEY;
+const path = require("path");
+const db = require("../models");
+const GMAPSAPIKEY = process.env.GMAPS_API_KEY;
 
 // Requiring our custom middleware for checking if a user is logged in
-var isAuthenticated = require("../config/middleware/isAuthenticated");
+const isAuthenticated = require("../config/middleware/isAuthenticated");
 
 module.exports = function (app) {
 

@@ -9,6 +9,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
     const ratingTypes = ['quality', 'quantity', 'price'];
     let currentCategoryId;  // Must be updated each time we display a new category
     let currentCatgoryIndex;
+    let currentCateogryRatings = {};
 
 
     // Iterate through category buttons on page to build list of available categories
@@ -60,7 +61,7 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
             .done(() => {
                 // On success, update the user ratings buttons to reflect new ratings
                 renderUserRatings();
-                renderCategory(currentCatgoryIndex);
+                renderCategory(currentCatgoryIndex, true);
             })
             .fail((err) => {
                 console.log('Error:')
@@ -213,7 +214,8 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
 
     // Define function for rendering all information about one category onto a store page
     // Note that rather than supply a category by name, we'll simply reference its index within the list of available categories
-    function renderCategory(index) {
+    // Optionaly passing true to ratingsOnly skips reloading the rest of the page. Usefull for updating global ratings only
+    function renderCategory(index, ratingsOnly) {
 
         currentCatgoryIndex = index;
 
@@ -251,24 +253,21 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
                 currentCategoryId = results.id;
 
                 // Save ratings data
-                const ratingsData = {};
+                currentCateogryRatings = {};
                 for (let i = 0; i < ratingTypes.length; i++) {
-                    ratingsData[ratingTypes[i]] = results[`${ratingTypes[i]}Avg`];
+                    currentCateogryRatings[ratingTypes[i]] = results[`${ratingTypes[i]}Avg`];
                 };
 
                 // Render stars based on rating percentage
-                for (const key in ratingsData) {
-                    const starPercentage = (ratingsData[key] / 3) * 100;
-                    const starPercentageRounded = `${(Math.round(starPercentage / 10) * 10)}%`;
-                    $(`.${key}RatingStars .stars-inner`).css('width', starPercentageRounded);
-                }
-
-
+                renderGlobalRatings();
 
                 // After constructing the global elements of the category, we'll update  the user notes section if possible
-                renderNote();
-                renderUserRatings();
-                renderTags();
+                // unles, ratings only was specified
+                if (!ratingsOnly) {
+                    renderNote();
+                    renderUserRatings();
+                    renderTags();
+                }
             })
 
             .fail(function (err) {
@@ -438,6 +437,24 @@ $(document).ready(function () {  // $.ready not working for some reason. TODO: F
     // Reverts most dynamic page data (ie: ratings) to defaults prior so that they can be updated
     function clearRatingsArea() {
 
+    };
+
+    function renderGlobalRatings() {
+        // Render stars based on current rating data
+        for (const key in currentCateogryRatings) {
+
+            const starPercentage = (currentCateogryRatings[key] / 3) * 100;
+            let starPercentageRounded;
+            // If there is no current rating, then just send 0 as our star percentage
+            if (isNaN(starPercentage)) {
+                starPercentageRounded = 0
+            } else {
+                starPercentageRounded = `${(Math.round(starPercentage / 10) * 10)}%`;
+            }
+
+            // Render rating onto stars using css width
+            $(`.${key}RatingStars .stars-inner`).css('width', starPercentageRounded);
+        };
     };
 
 });
