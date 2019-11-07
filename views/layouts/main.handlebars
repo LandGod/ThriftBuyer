@@ -21,14 +21,37 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="/addstore">Add store</a>
+                <li class="nav-item">
+                    <a class="nav-link {{#ifEquals current "home"}}active{{/ifEquals}}" href="/">
+                        Home
+                        {{#ifEquals current "home"}}
+                        <span class="sr-only">(current)</span>
+                        {{/ifEquals}}
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <span title="These features coming soon!"><a class="nav-link disabled" href="/account">Account</a></span>
+                    <a class="nav-link {{#ifEquals current "addstore"}}active{{/ifEquals}}" href="/addstore">
+                        Add store
+                        {{#ifEquals current "addstore"}}
+                        <span class="sr-only">(current)</span>
+                        {{/ifEquals}}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{#ifEquals current "about"}}active{{/ifEquals}}" href="/about">
+                        About
+                        {{#ifEquals current "about"}}
+                        <span class="sr-only">(current)</span>
+                        {{/ifEquals}}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <span title="These features coming soon!"><a class="nav-link disabled {{#ifEquals current "account"}}active{{/ifEquals}}" href="/account">My
+                            Account
+                            {{#ifEquals current "account"}}
+                            <span class="sr-only">(current)</span>
+                            {{/ifEquals}}
+                        </a></span>
                 </li>
             </ul>
             <div class="nav-item">
@@ -41,8 +64,10 @@
     </div>
     <footer class="footer py-2">
         <div class="container text-center">
-            <span class="text-muted mt-4">Copyright 2019 Daniel Gold | This app is still in beta. Current version: 0.35 | 
-                <a href="mailto:danieljasongold@gmail.com?subject=ThriftBuyerIssueReport" target="__blank">Report a problem</a></span>
+            <span class="text-muted mt-4">Copyright 2019 Daniel Gold | This app is still in beta. Current version: 0.36
+                |
+                <a href="mailto:danieljasongold@gmail.com?subject=ThriftBuyerIssueReport" target="__blank">Report a
+                    problem</a></span>
         </div>
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>

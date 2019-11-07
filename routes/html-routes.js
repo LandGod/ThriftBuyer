@@ -2,9 +2,15 @@
 const path = require("path");
 const db = require("../models");
 const GMAPSAPIKEY = process.env.GMAPS_API_KEY;
+const Handlebars = require('handlebars')
 
 // Requiring our custom middleware for checking if a user is logged in
 const isAuthenticated = require("../config/middleware/isAuthenticated");
+
+// Add if/equals functionality to Handlebars
+Handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
+  return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+});
 
 module.exports = function (app) {
 
@@ -17,13 +23,14 @@ module.exports = function (app) {
       pageTitle: 'Search Stores | ThriftBuyer',
       pageSpecificJs: '/js/search.js',
       GMAPSAPIKEY: GMAPSAPIKEY,
-      loginLogout: logInOut
+      loginLogout: logInOut,
+      current: 'home'
     });
   });
 
   app.get("/addstore", function (req, res) {
 
-    if (req.user) {  logInOut = logoutButton }
+    if (req.user) { logInOut = logoutButton }
     else { res.redirect('/login'); return };
 
 
@@ -31,7 +38,8 @@ module.exports = function (app) {
       pageTitle: 'Add Store | ThriftBuyer',
       pageSpecificJs: '/js/addstore.js',
       loginLogout: logInOut,
-      GMAPSAPIKEY: GMAPSAPIKEY
+      GMAPSAPIKEY: GMAPSAPIKEY,
+      current: 'addstore'
     });
   });
 
@@ -136,7 +144,19 @@ module.exports = function (app) {
     }
   });
 
+  app.get("/about", function (req, res) {
+    if (req.user) { logInOut = logoutButton }
+    else { logInOut = loginButton };
+
+    res.render("about", {
+      pageTitle: 'About | ThriftBuyer',
+      loginLogout: logInOut,
+      current: 'about'
+    });
+  });
+
 };
+
 
 // HTML for rendering the login/logout button as whichever is appropriate
 let loginButton = `<a class="nav-link" href="/login">Login</a>`;
