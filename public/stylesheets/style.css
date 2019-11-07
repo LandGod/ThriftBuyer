@@ -7,13 +7,26 @@ h6 .addressLink {
   color: darkgray;
 }
 
+/* Sticky Footer */
+
+html, body {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+}
+
 #footerPossitioningDiv {
-  min-height: 89.5vh;
+  flex: 1 0 auto;
 }
 
 footer {
+  flex-shrink: 0;
   background-color: lightgrey;
 }
+
+/* End Sticky Footer */
 
 /* Styling for rating stars */ 
 
