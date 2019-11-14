@@ -12,9 +12,14 @@ This application was developed specifically to help properties shoppers in the t
 
 ### Current Developement
 
-ThriftBuyer is currently still in early development and certain features, like tagging, are still in developement. Current planned features include:
-* Allowing users to add tags to stores
+ThriftBuyer is currently still in early development and certain features, like tagging, are still in developement. 
+#### Planned Next Features
 * Allowing users to search for stores by name
 * Google maps integration
+* Further integration with google places API for store name, hours, etc
 * User account settings
 * Allow users to confine searches to stores they have notes on
+* Many more to come...
+#### Know Issues (Fixes currently in developement)
+* Users should be able to begin typing in text to the new tag modal as soon as it appears, without having to click the text box
+* Users should recieve feedback when entering an invalid username or password at login
