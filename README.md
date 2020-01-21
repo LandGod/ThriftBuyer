@@ -14,7 +14,10 @@ This application was developed specifically to help properties shoppers in the t
 
 ### Current Developement
 
-ThriftBuyer is currently still in early development and certain features, like tagging, are still in developement. 
+I am currently in the process of completely re-writing ThriftBuyer in order to use React (with Redux and TypeScript) instead of Handlebars. After the initial re-write is complete the website will be transfered over to the new front end. The back end should not change and therefore the database should be preserverded during this process. 
+
+I plan to fix known issues in the process of the re-write. Plan features may or may not be added during this phase. Planned features not added in this phase will still be added at a later date.
+
 #### Planned Next Features
 * Allowing users to search for stores by name
 * Google maps integration
