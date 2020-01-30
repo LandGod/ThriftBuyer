@@ -3,13 +3,13 @@ import Modal, { ModalProps } from "react-bootstrap/Modal";
 import Button, { ButtonProps } from "react-bootstrap/Button";
 
 type ModalPopupProps = {
-  header: string;
+  header?: string;
   title?: string;
-  message: string;
+  message?: string; // Message or children can be passed in for maximum customizeability
   onModalClose?: Function;
   // ToDo: Figure out how to import type defenitions from react-bootstrap module for use here
-  size: ModalProps['size'];
-  style: ButtonProps['variant'];
+  size: ModalProps["size"]; // 'sm', 'lg', or 'xl'
+  style: ButtonProps["variant"]; // Bootstrap color for button
 };
 
 type ModalState = {
@@ -18,9 +18,7 @@ type ModalState = {
 
 export class ModalPopup extends Component<ModalPopupProps, ModalState> {
   static defaultProps: ModalPopupProps = {
-    header: "Alert!",
-    message: "<Oops! Something went wrong.>",
-    size: "lg",
+    size: "sm",
     style: "primary"
   };
 
@@ -50,12 +48,13 @@ export class ModalPopup extends Component<ModalPopupProps, ModalState> {
         show={this.state.showModal}
         onHide={this.toggle}
       >
-        <Modal.Header closebutton>
-          <Modal.Title>{this.props.header}</Modal.Title>
+        <Modal.Header closeButton>
+          { this.props.header ? <Modal.Title>{this.props.header}</Modal.Title> : ""}
         </Modal.Header>
         <Modal.Body>
           {this.props.title ? <h4>{this.props.title}</h4> : ""}
-          <p>{this.props.message}</p>
+          {this.props.message ? <p>{this.props.message}</p> : ""}
+          {this.props.children ? this.props.children : ""}
         </Modal.Body>
         <Modal.Footer>
           <Button variant={this.props.style} onClick={this.toggle}>
