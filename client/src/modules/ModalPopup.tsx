@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import Modal, { ModalProps } from "react-bootstrap/Modal";
 import Button, { ButtonProps } from "react-bootstrap/Button";
 
+type buttons = "close" | "okay" | "confirm";
+
 type ModalPopupProps = {
   header?: string;
   title?: string;
@@ -10,6 +12,9 @@ type ModalPopupProps = {
   // ToDo: Figure out how to import type defenitions from react-bootstrap module for use here
   size: ModalProps["size"]; // 'sm', 'lg', or 'xl'
   style: ButtonProps["variant"]; // Bootstrap color for button
+  buttons: buttons;
+  confirm: (...args: any[]) => void;
+  cancel: (...arg: any[]) => void;
 };
 
 type ModalState = {
@@ -19,7 +24,10 @@ type ModalState = {
 export class ModalPopup extends Component<ModalPopupProps, ModalState> {
   static defaultProps: ModalPopupProps = {
     size: "sm",
-    style: "primary"
+    style: "primary",
+    buttons: "close",
+    confirm: () => {},
+    cancel: () => {}
   };
 
   state = {
@@ -27,7 +35,7 @@ export class ModalPopup extends Component<ModalPopupProps, ModalState> {
   };
 
   // Show or hide modal
-  toggle = () => {
+  toggle = (): void => {
     this.setState((currentState: ModalState) => {
       currentState.showModal = !currentState.showModal;
 
@@ -40,6 +48,54 @@ export class ModalPopup extends Component<ModalPopupProps, ModalState> {
     });
   };
 
+  confirm = (callback: Function): void => {
+    callback();
+    this.toggle();
+  };
+
+  cancel = (callback: Function): void => {
+    callback();
+    this.toggle();
+  };
+
+  // Select the buttons to render based on props.
+  buttonSelect = (buttonType: buttons): React.ReactElement => {
+    switch (buttonType) {
+      default:
+        buttonType = "okay";
+      case "close" || "okay":
+        return (
+          <Modal.Footer>
+            <Button variant={this.props.style} onClick={this.toggle}>
+              {buttonType}
+            </Button>
+          </Modal.Footer>
+        );
+
+      case "confirm":
+        return (
+          <Modal.Footer>
+            <Button
+              variant={"success"}
+              onClick={() => {
+                this.confirm(this.props.confirm);
+              }}
+            >
+              Confirm
+            </Button>
+            <Button
+              variant={"danger"}
+              onClick={() => {
+                this.cancel(this.props.cancel);
+              }}
+            >
+              Cancel
+            </Button>
+          </Modal.Footer>
+        );
+    }
+  };
+
   render() {
     return (
       <Modal
@@ -49,18 +105,19 @@ export class ModalPopup extends Component<ModalPopupProps, ModalState> {
         onHide={this.toggle}
       >
         <Modal.Header closeButton>
-          { this.props.header ? <Modal.Title>{this.props.header}</Modal.Title> : ""}
+          {this.props.header ? (
+            <Modal.Title>{this.props.header}</Modal.Title>
+          ) : (
+            ""
+          )}
         </Modal.Header>
         <Modal.Body>
           {this.props.title ? <h4>{this.props.title}</h4> : ""}
           {this.props.message ? <p>{this.props.message}</p> : ""}
           {this.props.children ? this.props.children : ""}
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant={this.props.style} onClick={this.toggle}>
-            Close
-          </Button>
-        </Modal.Footer>
+        {/* Footer rendered below based on desired buttons */}
+        {this.buttonSelect(this.props.buttons)}
       </Modal>
     );
   }
