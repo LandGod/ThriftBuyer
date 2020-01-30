@@ -1,36 +1,27 @@
 import React, { Component } from "react";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
+import Modal, { ModalProps } from "react-bootstrap/Modal";
+import Button, { ButtonProps } from "react-bootstrap/Button";
 
-type ModalProps = {
+type ModalPopupProps = {
   header: string;
   title?: string;
   message: string;
   onModalClose?: Function;
-  // Note: The following types defenitions should actually get their own module:
-  size: "sm" | "md" | "lg";
-  style:
-    | "Primary"
-    | "Secondary"
-    | "Success"
-    | "Warning"
-    | "Danger"
-    | "Info"
-    | "Light"
-    | "Dark"
-    | "Link";
+  // ToDo: Figure out how to import type defenitions from react-bootstrap module for use here
+  size: ModalProps['size'];
+  style: ButtonProps['variant'];
 };
 
 type ModalState = {
   showModal: boolean;
 };
 
-export class ModalPopup extends Component<ModalProps, ModalState> {
-  static defaultProps: ModalProps = {
+export class ModalPopup extends Component<ModalPopupProps, ModalState> {
+  static defaultProps: ModalPopupProps = {
     header: "Alert!",
     message: "<Oops! Something went wrong.>",
-    size: "md",
-    style: "Primary"
+    size: "lg",
+    style: "primary"
   };
 
   state = {
