@@ -1,3 +1,5 @@
+Note: At time of writing I'm not paying for Google's geolocation API anymore so the app doesn't really work anymore.
+
 # ThriftBuyer
 
 ThriftBuyer is rating and note-taking application which allows users who frequently shop at thrift stores for work, to keep track of and share the best places to find certain items. Any user can search for stores near them and see what kinds of items can be found at that store, as well as what the community thinks of the quality, quantity, and price point, of those items. Not just that, but users can write their own notes about each store and item category, so that when they come back to store later, they can see their previous impressions about it.
